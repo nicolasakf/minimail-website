@@ -2,7 +2,7 @@ import { Groove, Nav } from "~/parts/site";
 import { AgentSection } from "~/scenes/agent";
 import { BloatSection } from "~/scenes/bloat";
 import { CategoriesSection } from "~/scenes/categories";
-import { AccountsSection, ClosingSection } from "~/scenes/closing";
+import { AccountsSection, ClosingSection, MissingSection } from "~/scenes/closing";
 import { HeroSection } from "~/scenes/hero-section";
 import { MinimumSection, RulesSection } from "~/scenes/minimum";
 import { ProblemsSection } from "~/scenes/problems";
@@ -23,6 +23,7 @@ export function App() {
         <AgentSection />
         <Groove />
         <AccountsSection />
+        <MissingSection />
         <ClosingSection />
       </main>
     </>

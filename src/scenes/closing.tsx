@@ -1,7 +1,7 @@
 /** Privacy and security, then the accounts that can be connected, the last call to download, and the footer. */
 import { type ReactNode } from "react";
 import { motion } from "motion/react";
-import { ArrowUpRight, Cloud, Server } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Cloud, Server } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { EASE } from "~/lib/motion";
@@ -122,6 +122,34 @@ export function AccountsSection() {
   );
 }
 
+/** If something is missing: build it, and tell us. It leads into the closing card, which is about being open source. */
+export function MissingSection() {
+  return (
+    <Section id="open-source" className="pb-6 md:pb-8">
+      <div className="mx-auto max-w-[820px] text-center">
+        <Title className="text-[32px] md:text-[48px]">Still feel like a feature you absolutely need is missing?</Title>
+        <Lead className="mx-auto mt-5 max-w-[680px]">
+          Then the answer is easy: just clone it and build it yourself, and then share your ideas, or the feature itself, with us on{" "}
+          <a href={`${LINKS.github}/issues`} className="font-medium text-sidebar-primary underline-offset-4 hover:underline">
+            GitHub
+          </a>
+          .
+        </Lead>
+        <Reveal className="mt-10 flex justify-center" delay={0.1}>
+          <motion.span
+            aria-hidden
+            animate={{ y: [0, 6, 0] }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+            className="plate-1 flex size-11 items-center justify-center rounded-full"
+          >
+            <ArrowDown className="size-5 text-sidebar-primary" />
+          </motion.span>
+        </Reveal>
+      </div>
+    </Section>
+  );
+}
+
 export function ClosingSection() {
   return (
     <section className="relative px-5 pb-10 pt-16 md:px-8">
@@ -137,6 +165,9 @@ export function ClosingSection() {
         />
         <Title className="mt-6 md:text-[72px]">Email made simple.</Title>
         <Lead className="mt-4 max-w-[520px]">Private, free and open source.</Lead>
+        <p className="mx-auto mt-3 max-w-[560px] text-pretty text-[15px] leading-relaxed text-muted-foreground">
+          We're committed to the open source community: the code is public, and your ideas and contributions shape what comes next.
+        </p>
         <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
           <DownloadButton />
           <GithubButton />
