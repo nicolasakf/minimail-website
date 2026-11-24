@@ -43,7 +43,7 @@ export function RulesSection() {
       <div className="mx-auto max-w-[760px] text-center">
         <Title>You decide what gets through.</Title>
         <Lead className="mx-auto mt-5 max-w-[620px]">
-          Mark a sender or domain as priority, mute one you don't need to hear from, or block one for good.
+          Mark a sender or domain as priority, mute one you don't need to hear from, block one for good, or unsubscribe from a list.
         </Lead>
       </div>
       <Reveal className="mt-14">
