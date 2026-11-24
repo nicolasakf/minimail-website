@@ -7,11 +7,12 @@ import { AnimatePresence, motion } from "motion/react";
 import { BellOff, ShieldBan, Trash2, Zap } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { B, CATEGORIES, CHIPS, P, type Category, type CategoryId, type Chip, type Sender } from "~/lib/demo";
+import { B, P, type Sender } from "~/lib/demo";
 import { EASE, useLoop } from "~/lib/motion";
-import { Avatar, CardHead, CardPlate, ChipLine, GroupTile } from "~/parts/mail";
+import { Avatar, CardPlate, ChipLine, GroupTile } from "~/parts/mail";
 import { Lead, Reveal, Section, Title } from "~/parts/site";
 import { Stage } from "~/parts/stage";
+import { SortingScene } from "~/scenes/sorting";
 import { FOLDER_ACTIVE } from "~/parts/window";
 
 /** New mail, filed into a category card. */
@@ -21,14 +22,12 @@ export function MinimumSection() {
       <div className="mx-auto max-w-[760px] text-center">
         <Title>Your mail sorts itself.</Title>
         <Lead className="mx-auto mt-5 max-w-[620px]">
-          New mail lands in your Inbox and is filed into a category card: receipts, newsletters, notifications. Whatever is left
-          stays in your list.
+          Receipts, newsletters and notifications each fold into their own card the moment they arrive. Mail from people stays in
+          your list.
         </Lead>
       </div>
       <Reveal className="mt-14">
-        <Stage width={FW} height={FH}>
-          <Flow />
-        </Stage>
+        <SortingScene />
       </Reveal>
     </Section>
   );
@@ -51,193 +50,6 @@ export function RulesSection() {
         </Stage>
       </Reveal>
     </Section>
-  );
-}
-
-/* ---------------------------------------------------------------- The flow ---------------------------------------------------------------- */
-
-const FW = 1160;
-const FH = 500;
-
-type Target = CategoryId | "list";
-
-interface Mail {
-  id: string;
-  from: Sender;
-  subject: string;
-  to: Target;
-}
-
-const MAILS: Mail[] = [
-  { id: "f1", from: B.wingtip, subject: "Receipt for order #4417", to: "receipts" },
-  { id: "f2", from: P.ana, subject: "Thursday?", to: "list" },
-  { id: "f3", from: B.lucerne, subject: "Five ideas for a slower weekend", to: "newsletters" },
-  { id: "f4", from: B.adatum, subject: "Build passed on main", to: "notifications" },
-];
-
-const CARDS: CategoryId[] = ["receipts", "newsletters", "notifications"];
-
-// Where things sit on the stage (its own pixels).
-const SOURCE = { x: 20, y: 200 };
-const PILL_W = 260;
-const CARD = { x: 400, y: 40, width: 230, gap: 24 };
-const cardX = (i: number) => CARD.x + i * (CARD.width + CARD.gap);
-const LIST = { x: 400, y: 320, width: 3 * CARD.width + 2 * CARD.gap, height: 150 };
-
-function targetPoint(to: Target): { x: number; y: number } {
-  if (to === "list") return { x: LIST.x, y: LIST.y + 60 };
-  return { x: cardX(CARDS.indexOf(to)) + CARD.width / 2, y: CARD.y + 226 };
-}
-
-// Per mail: it arrives, it travels to its place, it lands.
-const PHASES = [800, 1100, 900];
-const STEPS = MAILS.flatMap(() => PHASES).concat([2600]);
-
-function Flow() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { step } = useLoop(ref, STEPS, STEPS.length - 1);
-  const done = step >= MAILS.length * PHASES.length;
-  const index = done ? MAILS.length - 1 : Math.floor(step / PHASES.length);
-  const phase = done ? 2 : step % PHASES.length;
-  const mail = MAILS[index];
-  const landed = MAILS.filter((_, i) => i < index || (i === index && phase === 2));
-
-  const end = targetPoint(mail.to);
-  const pill =
-    phase === 0
-      ? { x: SOURCE.x, y: SOURCE.y, opacity: 1, scale: 1 }
-      : phase === 1
-        ? mail.to === "list"
-          ? { x: LIST.x + 20, y: LIST.y + 38, opacity: 1, scale: 0.9 }
-          : { x: end.x - PILL_W / 2, y: end.y - 14, opacity: 1, scale: 0.85 }
-        : mail.to === "list"
-          ? { x: LIST.x + 20, y: LIST.y + 38, opacity: 0, scale: 0.9 }
-          : { x: end.x - PILL_W / 2, y: end.y - 100, opacity: 0, scale: 0.8 };
-
-  const litTarget: Target | null = phase >= 1 ? mail.to : null;
-
-  return (
-    <div ref={ref} className="absolute inset-0">
-      <Heading x={SOURCE.x} width={PILL_W}>
-        New mail
-      </Heading>
-      <Heading x={CARD.x} width={LIST.width}>
-        Filed into a category, or left in your list
-      </Heading>
-
-      <svg className="absolute inset-0" width={FW} height={FH} fill="none">
-        {([...CARDS, "list"] as Target[]).map((to) => {
-          const p = targetPoint(to);
-          return (
-            <Wire
-              key={to}
-              from={{ x: SOURCE.x + PILL_W + 6, y: SOURCE.y + 30 }}
-              to={to === "list" ? p : { x: p.x, y: p.y + 4 }}
-              lit={phase === 1 && litTarget === to}
-              vertical={to !== "list"}
-            />
-          );
-        })}
-      </svg>
-
-      {/* The incoming slot. */}
-      <div className="corner-squircle absolute rounded-[16px]" style={{ left: SOURCE.x - 6, top: SOURCE.y - 6, width: PILL_W + 12, height: 72, boxShadow: "var(--pressed)" }} />
-
-      {/* The category cards. */}
-      {CARDS.map((id, i) => (
-        <div key={id} className="absolute" style={{ left: cardX(i), top: CARD.y, width: CARD.width }}>
-          <FlowCard category={CATEGORIES.find((c) => c.id === id)!} added={landed.filter((m) => m.to === id)} lit={litTarget === id && phase >= 1} />
-        </div>
-      ))}
-
-      {/* What stays a row of its own. */}
-      <div
-        className={cn(
-          "corner-squircle absolute rounded-2xl p-2 transition-[box-shadow,background-color] duration-300",
-          litTarget === "list" ? "grain bg-sidebar-primary/[0.1] shadow-raise-1" : "shadow-raise-3",
-        )}
-        style={{ left: LIST.x, top: LIST.y, width: LIST.width, height: LIST.height }}
-      >
-        <div className="px-2 pb-1 text-[13px] font-medium text-muted-foreground">Your list</div>
-        <AnimatePresence initial={false}>
-          {landed
-            .filter((m) => m.to === "list")
-            .map((m) => (
-              <motion.div key={m.id} initial={{ height: 0, opacity: 0 }} animate={{ height: 40, opacity: 1 }} transition={{ duration: 0.4, ease: EASE }}>
-                <MiniRow from={m.from} subject={m.subject} unread />
-              </motion.div>
-            ))}
-        </AnimatePresence>
-        <MiniRow from={P.noor} subject="Kitchen renovation quote" />
-        <MiniRow from={P.ravi} subject="Draft agenda for Thursday's workshop" />
-      </div>
-
-      {/* The mail on its way. */}
-      <motion.div
-        key={mail.id}
-        className="absolute left-0 top-0 z-10"
-        initial={{ x: SOURCE.x - 30, y: SOURCE.y, opacity: 0, scale: 1 }}
-        animate={pill}
-        transition={{ duration: phase === 0 ? 0.45 : 0.8, ease: EASE }}
-        style={{ width: PILL_W }}
-      >
-        <div className="plate-2 corner-squircle flex h-[60px] items-center gap-2.5 rounded-[14px] px-3 text-[13px] shadow-overlay">
-          <span className="size-2 shrink-0 rounded-full bg-unread" />
-          <Avatar sender={mail.from} size={28} />
-          <div className="min-w-0 flex-1">
-            <div className="truncate font-semibold">{mail.from.name}</div>
-            <div className="truncate text-muted-foreground">{mail.subject}</div>
-          </div>
-        </div>
-      </motion.div>
-    </div>
-  );
-}
-
-function Heading({ x, width, children }: { x: number; width: number; children: ReactNode }) {
-  return (
-    <div className="absolute top-0 text-[13px] font-semibold uppercase tracking-[0.14em] text-muted-foreground" style={{ left: x, width }}>
-      {children}
-    </div>
-  );
-}
-
-/** A connector of the chart: a groove at rest, the highlight color while mail travels along it. */
-function Wire({ from, to, lit, vertical = false }: { from: { x: number; y: number }; to: { x: number; y: number }; lit: boolean; vertical?: boolean }) {
-  const d = vertical
-    ? `M ${from.x} ${from.y} C ${from.x + 60} ${from.y}, ${to.x} ${to.y + 80}, ${to.x} ${to.y}`
-    : `M ${from.x} ${from.y} C ${from.x + 70} ${from.y}, ${to.x - 70} ${to.y}, ${to.x} ${to.y}`;
-  return (
-    <>
-      <path d={d} stroke="rgb(var(--shade-rgb) / 0.16)" strokeWidth={2} strokeDasharray="2 6" strokeLinecap="round" />
-      <motion.path
-        d={d}
-        stroke="hsl(var(--sidebar-primary))"
-        strokeWidth={2.5}
-        strokeLinecap="round"
-        initial={false}
-        animate={{ pathLength: lit ? 1 : 0, opacity: lit ? 1 : 0 }}
-        transition={{ duration: lit ? 0.7 : 0.3, ease: EASE }}
-      />
-    </>
-  );
-}
-
-function FlowCard({ category, added, lit }: { category: Category; added: Mail[]; lit: boolean }) {
-  const chips: Chip[] = [...added.map((m) => ({ id: m.id, from: m.from, unread: true })), ...CHIPS[category.id]].slice(0, 5);
-  return (
-    <CardPlate lifted={lit}>
-      <CardHead category={category} count={category.count + added.length} unread={category.unread + added.length} />
-      <div className="flex flex-col overflow-hidden px-1.5" style={{ height: 5 * 28 }}>
-        <AnimatePresence initial={false}>
-          {chips.map((chip) => (
-            <motion.div key={chip.id} initial={{ height: 0, opacity: 0 }} animate={{ height: 28, opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.4, ease: EASE }} className="shrink-0">
-              <ChipLine chip={{ ...chip, code: undefined }} />
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-    </CardPlate>
   );
 }
 
