@@ -41,7 +41,7 @@ export function RulesSection() {
   return (
     <Section id="rules">
       <div className="mx-auto max-w-[760px] text-center">
-        <Title>You decide who gets through.</Title>
+        <Title>You decide what gets through.</Title>
         <Lead className="mx-auto mt-5 max-w-[620px]">
           Mark a sender as priority, mute one you don't need to hear from, or block one for good. Each works on an address or a
           whole domain.
