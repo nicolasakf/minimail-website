@@ -43,7 +43,7 @@ export function RulesSection() {
       <div className="mx-auto max-w-[760px] text-center">
         <Title>You decide what gets through.</Title>
         <Lead className="mx-auto mt-5 max-w-[620px]">
-          Mark a sender or domain as priority, mute one you don't need to hear from, block one for good, or unsubscribe from a list.
+          Mark a conversation, sender or domain as priority, mute one you don't need to hear from, block one for good, or unsubscribe from a list.
         </Lead>
       </div>
       <Reveal className="mt-14">
@@ -88,9 +88,9 @@ interface Rule {
 
 const RULES: Rule[] = [
   { id: "priority", label: "Priority", icon: Zap, tone: "text-amber", who: B.northwindMarket, subject: "Your refund was approved", text: "Always notifies you, and gathers their mail in a Priority card." },
-  { id: "mute", label: "Muted", icon: BellOff, tone: "text-purple", who: B.litware, subject: "Weekly activity summary", text: "Their mail still arrives, but never makes a notification." },
+  { id: "mute", label: "Muted", icon: BellOff, tone: "text-purple", who: B.litware, subject: "Weekly activity summary", text: "Their mail still arrives, but you won't be notified." },
   { id: "block", label: "Blocked", icon: ShieldBan, tone: "text-destructive", who: B.wingtip, subject: "LAST CHANCE: 70% off", text: "Their mail goes straight to the Trash, before you see it." },
-  { id: "unsub", label: "Unsubscribe", icon: ListX, tone: "text-foreground", who: B.lucerne, subject: "This week: 12 stories", text: "Asks the list to drop you. It asks first, since it can't be undone." },
+  { id: "unsub", label: "Unsubscribe", icon: ListX, tone: "text-foreground", who: B.lucerne, subject: "This week: 12 stories", text: "Unsubscribe from a mailing list with one click." },
 ];
 
 function Rules() {
