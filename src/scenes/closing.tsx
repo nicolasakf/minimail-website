@@ -1,141 +1,50 @@
 /** Privacy and security, then the accounts that can be connected, the last call to download, and the footer. */
-import { useRef, type ReactNode } from "react";
-import { AnimatePresence, motion } from "motion/react";
-import { ArrowUpRight, Cloud, ImageOff, Laptop, Lock, LockOpen, Server } from "lucide-react";
+import { type ReactNode } from "react";
+import { motion } from "motion/react";
+import { ArrowUpRight, Cloud, Server } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { EASE, useLoop } from "~/lib/motion";
+import { EASE } from "~/lib/motion";
 import { AccountMark } from "~/parts/mail";
 import { DownloadButton, GithubButton, GithubMark, LINKS, Lead, Reveal, Section, Title } from "~/parts/site";
-
-/** A small animated picture set into a privacy card. */
-function Well({ children, className }: { children: ReactNode; className?: string }) {
-  return (
-    <div className={cn("corner-squircle relative h-[150px] overflow-hidden rounded-[18px]", className)} style={{ boxShadow: "var(--pressed)" }}>
-      {children}
-    </div>
-  );
-}
-
-/** Your computer talks straight to your provider; there is no MiniMail server to go through. */
-function DirectLine() {
-  return (
-    <Well>
-      <div className="absolute inset-x-5 top-4 flex items-center justify-center gap-2 text-[12px] text-muted-foreground/70">
-        <Server className="size-4" />
-        <span className="line-through decoration-2">MiniMail server</span>
-      </div>
-      <div className="absolute inset-x-6 bottom-5 flex items-center">
-        <span className="plate-2 flex size-12 shrink-0 items-center justify-center rounded-[14px]">
-          <Laptop className="size-6" strokeWidth={1.7} />
-        </span>
-        <div className="relative mx-3 h-px flex-1 border-t-2 border-dashed border-foreground/20">
-          <motion.span
-            className="absolute -top-[6px] size-2.5 rounded-full bg-sidebar-primary"
-            animate={{ left: ["0%", "calc(100% - 10px)"], opacity: [0, 1, 1, 0] }}
-            transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", times: [0, 0.1, 0.9, 1] }}
-          />
-        </div>
-        <span className="plate-2 flex size-12 shrink-0 items-center justify-center rounded-[14px]">
-          <AccountMark account="gmail" size={26} />
-        </span>
-      </div>
-    </Well>
-  );
-}
-
-/** Passwords are typed once and locked in the OS keychain. */
-function Keychain() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { step } = useLoop(ref, [1200, 1000, 2600], 2);
-  const locked = step === 2;
-  return (
-    <Well>
-      <div ref={ref} className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-        <div className="corner-squircle flex h-9 w-[210px] items-center rounded-[11px] px-3 font-mono text-[15px] tracking-[0.25em] text-foreground shadow-pressed">
-          {"•".repeat(step === 0 ? 5 : 9)}
-        </div>
-        <div className="flex items-center gap-2 text-[13px] font-medium">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span key={locked ? "locked" : "open"} initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} transition={{ duration: 0.2 }} className="flex items-center gap-2">
-              {locked ? <Lock className="size-4 text-success" /> : <LockOpen className="size-4 text-muted-foreground" />}
-              {locked ? "In your keychain" : "Saving…"}
-            </motion.span>
-          </AnimatePresence>
-        </div>
-      </div>
-    </Well>
-  );
-}
-
-/** A message that tries to load a picture from a stranger's server is stopped. */
-function BlockedImages() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { step } = useLoop(ref, [900, 1800, 800], 1);
-  return (
-    <Well>
-      <div ref={ref} className="absolute inset-0 flex items-center justify-center gap-3 px-5">
-        <div className="corner-squircle plate-2 flex size-[84px] shrink-0 items-center justify-center rounded-[16px]">
-          <ImageOff className="size-7 text-muted-foreground" strokeWidth={1.6} />
-        </div>
-        <div className="min-w-0 space-y-1.5 text-[12.5px]">
-          <div className="font-semibold">Remote image blocked</div>
-          <div className="truncate rounded-md bg-foreground/[0.06] px-2 py-1 font-mono text-[11px] text-muted-foreground">tracker.example/px.gif</div>
-          <motion.div animate={{ opacity: step === 1 ? 1 : 0.3 }} className="text-muted-foreground">
-            They can't tell you opened it.
-          </motion.div>
-        </div>
-      </div>
-    </Well>
-  );
-}
-
-/** Before anything goes to your AI provider, digits are replaced. */
-function Redaction() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { step } = useLoop(ref, [1300, 2800], 1);
-  const hidden = step === 1;
-  return (
-    <Well>
-      <div ref={ref} className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-5 text-[13px]">
-        <div className="plate-2 corner-squircle w-full rounded-[12px] px-3.5 py-2.5 leading-snug">
-          <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Sent to your provider</div>
-          <div className="mt-1">
-            Your sign-in code is{" "}
-            <span className="relative inline-block font-mono font-semibold">
-              <span className={cn("transition-opacity duration-300", hidden ? "opacity-0" : "opacity-100")}>482910</span>
-              <span className={cn("absolute inset-0 transition-opacity duration-300", hidden ? "opacity-100" : "opacity-0")}>••••••</span>
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Cloud className="size-4" /> Only with your own key
-        </div>
-      </div>
-    </Well>
-  );
-}
+import { BlockedImages, DirectLine, Keychain, Redaction, Well } from "~/scenes/privacy";
 
 const PRIVACY: { title: string; text: string; visual: ReactNode }[] = [
   {
     title: "No server in between.",
     text: "MiniMail talks to your mail provider directly. There is no MiniMail server, so there is no copy of your mail on one.",
-    visual: <DirectLine />,
+    visual: (
+      <Well>
+        <DirectLine />
+      </Well>
+    ),
   },
   {
     title: "Locked in your keychain.",
     text: "Passwords, tokens and the saved copy of your mail are encrypted with your computer's keychain, and they stay on your computer.",
-    visual: <Keychain />,
+    visual: (
+      <Well>
+        <Keychain />
+      </Well>
+    ),
   },
   {
     title: "Mail can't run or track.",
     text: "No scripts, no forms, and no remote images unless you allow them, so a sender can't tell when you open a message.",
-    visual: <BlockedImages />,
+    visual: (
+      <Well>
+        <BlockedImages />
+      </Well>
+    ),
   },
   {
     title: "AI only if you choose it.",
     text: "Sorting with AI uses your own key. Without one, nothing is sent. With one, only the sender, subject and about 500 characters go, with digits and link paths replaced first.",
-    visual: <Redaction />,
+    visual: (
+      <Well>
+        <Redaction />
+      </Well>
+    ),
   },
 ];
 
@@ -227,7 +136,7 @@ export function ClosingSection() {
           transition={{ duration: 0.9, ease: EASE }}
         />
         <Title className="mt-6 md:text-[72px]">Email made simple.</Title>
-        <Lead className="mt-4 max-w-[520px]">Free and open source, for macOS. Bring your accounts, and your agent if you have one.</Lead>
+        <Lead className="mt-4 max-w-[520px]">Private, free and open source.</Lead>
         <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
           <DownloadButton />
           <GithubButton />
