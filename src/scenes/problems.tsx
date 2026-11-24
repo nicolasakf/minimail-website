@@ -4,7 +4,7 @@
  */
 import { useRef, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Check, LoaderCircle, Search, TriangleAlert } from "lucide-react";
+import { LoaderCircle, Search } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { B, P, type Sender } from "~/lib/demo";
@@ -13,28 +13,8 @@ import { Avatar } from "~/parts/mail";
 import { Lead, Reveal, Section, Title } from "~/parts/site";
 
 /** A small screen of the app: one plate set into the card. */
-function Screen({ children, verdict, tone = "muted" }: { children: ReactNode; verdict?: ReactNode; tone?: "muted" | "bad" }) {
-  return (
-    <div className="plate-2 corner-squircle relative h-[230px] overflow-hidden rounded-[20px] p-3">
-      {children}
-      <AnimatePresence>
-        {verdict && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, ease: EASE }}
-            className={cn(
-              "plate-3 corner-squircle absolute inset-x-3 bottom-3 flex items-center justify-center gap-2 rounded-[12px] px-3 py-2 text-center text-[13px] font-semibold",
-              tone === "bad" ? "text-destructive" : "text-foreground",
-            )}
-          >
-            {verdict}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+function Screen({ children }: { children: ReactNode }) {
+  return <div className="plate-2 corner-squircle relative h-[230px] overflow-hidden rounded-[20px] p-3">{children}</div>;
 }
 
 function Row({ from, title, sub, unread, className }: { from: Sender; title: string; sub?: string; unread?: boolean; className?: string }) {
@@ -57,7 +37,7 @@ function Slow() {
   const { step } = useLoop(ref, [900, 1100, 1300, 3000], 3);
   const seconds = [3, 9, 21, 34][step];
   return (
-    <Screen verdict={step === 3 ? "Still loading." : undefined}>
+    <Screen>
       <div ref={ref}>
         <div className="flex h-8 items-center px-1.5">
           <span className="text-[15px] font-semibold">Inbox</span>
@@ -80,47 +60,59 @@ function Slow() {
   );
 }
 
-/* ---------- Unreliable: it said sent, and it never arrived. One message, one status that changes. ---------- */
+/* ---------- Unreliable: people text each other to ask whether an email arrived. ---------- */
+
+interface Bubble {
+  me: boolean;
+  text: string;
+}
+
+const CHAT: Bubble[] = [
+  { me: false, text: "Did you see the client's email?" },
+  { me: true, text: "No, what email?" },
+  { me: false, text: "He sent it yesterday." },
+  { me: true, text: "I didn't receive it." },
+  { me: false, text: "Are you sure?" },
+  { me: false, text: "Oh, it was trapped in their outbox, so he's sending it now. Did you get it?" },
+  { me: true, text: "No, I don't see it." },
+  { me: true, text: "Oh wait, it was spammed. Fine, got it." },
+];
+
+// An empty chat, then one message at a time; the long one is given longer to read.
+const CHAT_STEPS = [700, ...CHAT.map((b) => (b.text.length > 40 ? 2200 : 1200)), 2400];
 
 function Unreliable() {
   const ref = useRef<HTMLDivElement>(null);
-  const { step } = useLoop(ref, [1300, 1700, 3300], 2);
+  const { step } = useLoop(ref, CHAT_STEPS, CHAT_STEPS.length - 1);
+  const shown = CHAT.slice(0, step);
   return (
-    <Screen verdict={step === 2 ? "No error. No explanation." : undefined} tone="bad">
-      <div ref={ref} className="flex h-[calc(100%-52px)] flex-col justify-center gap-5">
-        <div className="plate-1 corner-squircle flex items-center gap-3 rounded-[16px] px-3 py-3">
-          <Avatar sender={P.sam} size={34} />
-          <div className="min-w-0 leading-tight">
-            <div className="truncate text-[14px] font-semibold">Signed contract</div>
-            <div className="truncate text-[12px] text-muted-foreground">To Sam Okafor</div>
-          </div>
+    <Screen>
+      <div ref={ref} className="flex h-full flex-col">
+        <div className="flex h-9 shrink-0 items-center justify-center gap-2 border-b border-foreground/10 pb-2">
+          <Avatar sender={P.sam} size={22} />
+          <span className="text-[13px] font-semibold">Sam</span>
         </div>
-        <div className="flex justify-center">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span
-              key={step}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.25 }}
-              className="plate-3 corner-squircle flex items-center gap-2 rounded-full px-4 py-2 text-[15px] font-semibold"
-            >
-              {step === 0 && (
-                <>
-                  <LoaderCircle className="size-4 animate-spin text-muted-foreground" /> Sending…
-                </>
-              )}
-              {step === 1 && (
-                <>
-                  <Check className="size-4 text-success" /> Sent
-                </>
-              )}
-              {step === 2 && (
-                <>
-                  <TriangleAlert className="size-4 text-amber" /> Sam never got it
-                </>
-              )}
-            </motion.span>
+        <div className="flex min-h-0 flex-1 flex-col justify-end gap-1.5 overflow-hidden pt-2">
+          <AnimatePresence initial={false}>
+            {shown.map((bubble, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 14, scale: 0.92 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.3, ease: EASE }}
+                className={cn("flex shrink-0", bubble.me ? "justify-end" : "justify-start")}
+                style={{ transformOrigin: bubble.me ? "right bottom" : "left bottom" }}
+              >
+                <span
+                  className={cn(
+                    "max-w-[82%] rounded-[16px] px-3 py-1.5 text-[12.5px] leading-snug",
+                    bubble.me ? "rounded-br-[5px] bg-sidebar-primary text-sidebar-primary-foreground" : "rounded-bl-[5px] bg-foreground/[0.09]",
+                  )}
+                >
+                  {bubble.text}
+                </span>
+              </motion.div>
+            ))}
           </AnimatePresence>
         </div>
       </div>
@@ -143,8 +135,8 @@ function Overwhelming() {
   const { step } = useLoop(ref, [1200, 650, 650, 650, 650, 650, 2800], 6);
   const ads = ADS.slice(0, Math.min(step, ADS.length)).reverse();
   return (
-    <Screen verdict={step === 6 ? "The mail that matters is buried." : undefined}>
-      <div ref={ref} className="h-[calc(100%-52px)] overflow-hidden">
+    <Screen>
+      <div ref={ref} className="h-full overflow-hidden">
         <div className="flex h-8 items-center px-1.5 text-[15px] font-semibold">Inbox</div>
         <AnimatePresence initial={false}>
           {ads.map((ad) => (
@@ -167,7 +159,7 @@ function HardToSearch() {
   const typed = useTyping("invoice from acme", true, 14);
   const text = step === 0 ? typed : "invoice from acme";
   return (
-    <Screen verdict={step === 2 ? "Not the invoice." : undefined}>
+    <Screen>
       <div ref={ref}>
         <div className="corner-squircle flex h-10 items-center gap-2 rounded-[12px] px-3 text-[14px] shadow-pressed">
           <Search className="size-4 text-muted-foreground" />
@@ -188,7 +180,7 @@ function HardToSearch() {
 
 const PROBLEMS = [
   { title: "Slow.", text: "Mail takes forever to load, open and search.", scene: <Slow /> },
-  { title: "Unreliable.", text: "Sync stalls and sends fail, and it's hard to understand why.", scene: <Unreliable /> },
+  { title: "Unreliable.", text: "Sync stalls and sends fail. People often use other chat apps to let others know they sent an email, just to make sure.", scene: <Unreliable /> },
   { title: "Overwhelming.", text: "Ads, spam and mail you never asked for bury the mail that matters.", scene: <Overwhelming /> },
   { title: "Hard to search.", text: "By sender, subject or attachment: slow, and often the wrong results.", scene: <HardToSearch /> },
 ];
