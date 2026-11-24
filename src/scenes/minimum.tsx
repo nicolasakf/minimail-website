@@ -1,6 +1,6 @@
 /**
- * "The minimum", as two flowcharts. First: new mail lands in one of the four places, and in the Inbox it is sorted
- * into a category card or stays in the list. Then, further down: priority, mute and block decide who gets through.
+ * How mail is categorized and filtered: first, new mail being filed into a category card; then (in categories.tsx)
+ * the editor where categories are described; then, here again, priority, mute and block deciding who gets through.
  */
 import { useRef, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
@@ -12,16 +12,17 @@ import { EASE, useLoop } from "~/lib/motion";
 import { Avatar, CardHead, CardPlate, ChipLine, GroupTile } from "~/parts/mail";
 import { Lead, Reveal, Section, Title } from "~/parts/site";
 import { Stage } from "~/parts/stage";
-import { FOLDERS, FOLDER_ACTIVE, type FolderId } from "~/parts/window";
+import { FOLDER_ACTIVE } from "~/parts/window";
 
+/** New mail, filed into a category card. */
 export function MinimumSection() {
   return (
     <Section id="minimum">
       <div className="mx-auto max-w-[760px] text-center">
-        <Title>Your mail can be in four places.</Title>
+        <Title>Your mail sorts itself.</Title>
         <Lead className="mx-auto mt-5 max-w-[620px]">
-          Inbox, Archive, Trash and Spam. That's it. No written rules, no folders inside other folders. In the Inbox, categories
-          sort it further.
+          New mail lands in your Inbox and is filed into a category card: receipts, newsletters, notifications. Whatever is left
+          stays in your list.
         </Lead>
       </div>
       <Reveal className="mt-14">
@@ -29,8 +30,15 @@ export function MinimumSection() {
           <Flow />
         </Stage>
       </Reveal>
+    </Section>
+  );
+}
 
-      <div className="mx-auto mt-32 max-w-[760px] text-center">
+/** Priority, mute and block. */
+export function RulesSection() {
+  return (
+    <Section id="rules">
+      <div className="mx-auto max-w-[760px] text-center">
         <Title>You decide who gets through.</Title>
         <Lead className="mx-auto mt-5 max-w-[620px]">
           Mark a sender as priority, mute one you don't need to hear from, or block one for good. Each works on an address or a
@@ -48,47 +56,41 @@ export function MinimumSection() {
 
 /* ---------------------------------------------------------------- The flow ---------------------------------------------------------------- */
 
-const FW = 1240;
-const FH = 560;
+const FW = 1160;
+const FH = 500;
 
-type Target = CategoryId | "list" | "spam";
+type Target = CategoryId | "list";
 
 interface Mail {
   id: string;
   from: Sender;
   subject: string;
-  folder: FolderId;
   to: Target;
 }
 
 const MAILS: Mail[] = [
-  { id: "f1", from: B.northwindMarket, subject: "Receipt for order #4417", folder: "inbox", to: "receipts" },
-  { id: "f2", from: P.ana, subject: "Thursday?", folder: "inbox", to: "list" },
-  { id: "f3", from: B.lucerne, subject: "Five ideas for a slower weekend", folder: "inbox", to: "newsletters" },
-  { id: "f4", from: { name: "Prize Center", email: "win@prize-center.example", brand: "#b8402a" }, subject: "You have WON a $500 gift card!!!", folder: "spam", to: "spam" },
-  { id: "f5", from: B.adatum, subject: "Build passed on main", folder: "inbox", to: "notifications" },
+  { id: "f1", from: B.wingtip, subject: "Receipt for order #4417", to: "receipts" },
+  { id: "f2", from: P.ana, subject: "Thursday?", to: "list" },
+  { id: "f3", from: B.lucerne, subject: "Five ideas for a slower weekend", to: "newsletters" },
+  { id: "f4", from: B.adatum, subject: "Build passed on main", to: "notifications" },
 ];
 
 const CARDS: CategoryId[] = ["receipts", "newsletters", "notifications"];
 
 // Where things sit on the stage (its own pixels).
-const SOURCE = { x: 20, y: 248 };
-const PILL_W = 250;
-const KEYS = { x: 360, y: 120, width: 190, row: 76 };
-const keyY = (i: number) => KEYS.y + 16 + i * KEYS.row + 26;
-const CARD = { x: 660, y: 64, width: 186, gap: 21 };
+const SOURCE = { x: 20, y: 200 };
+const PILL_W = 260;
+const CARD = { x: 400, y: 40, width: 230, gap: 24 };
 const cardX = (i: number) => CARD.x + i * (CARD.width + CARD.gap);
-const LIST = { x: 660, y: 372, width: 600 - 20, height: 150 };
+const LIST = { x: 400, y: 320, width: 3 * CARD.width + 2 * CARD.gap, height: 150 };
 
 function targetPoint(to: Target): { x: number; y: number } {
   if (to === "list") return { x: LIST.x, y: LIST.y + 60 };
-  if (to === "spam") return { x: KEYS.x + KEYS.width, y: keyY(3) };
-  const i = CARDS.indexOf(to);
-  return { x: cardX(i) + CARD.width / 2, y: CARD.y + 226 };
+  return { x: cardX(CARDS.indexOf(to)) + CARD.width / 2, y: CARD.y + 226 };
 }
 
-// Per mail: shown at the start, on its way to a place, on its way to a category, landed.
-const PHASES = [700, 900, 1000, 800];
+// Per mail: it arrives, it travels to its place, it lands.
+const PHASES = [800, 1100, 900];
 const STEPS = MAILS.flatMap(() => PHASES).concat([2600]);
 
 function Flow() {
@@ -96,52 +98,42 @@ function Flow() {
   const { step } = useLoop(ref, STEPS, STEPS.length - 1);
   const done = step >= MAILS.length * PHASES.length;
   const index = done ? MAILS.length - 1 : Math.floor(step / PHASES.length);
-  const phase = done ? 3 : step % PHASES.length;
+  const phase = done ? 2 : step % PHASES.length;
   const mail = MAILS[index];
-  const landed = MAILS.filter((_, i) => i < index || (i === index && phase === 3));
+  const landed = MAILS.filter((_, i) => i < index || (i === index && phase === 2));
 
-  const folderIndex = FOLDERS.findIndex((f) => f.id === mail.folder);
-  const atKey = { x: KEYS.x + KEYS.width + 24, y: keyY(folderIndex) - 22 };
   const end = targetPoint(mail.to);
   const pill =
     phase === 0
       ? { x: SOURCE.x, y: SOURCE.y, opacity: 1, scale: 1 }
       : phase === 1
-        ? { x: KEYS.x - PILL_W - 18, y: keyY(folderIndex) - 22, opacity: 1, scale: 1 }
-        : phase === 2
-          ? mail.to === "spam"
-            ? { x: KEYS.x + 40, y: keyY(folderIndex) - 22, opacity: 0, scale: 0.6 }
-            : { x: end.x - PILL_W / 2 + (mail.to === "list" ? PILL_W / 2 + 20 : 0), y: end.y - 22, opacity: 1, scale: 0.85 }
-          : { x: end.x - PILL_W / 2, y: end.y - 22, opacity: 0, scale: 0.8 };
-  void atKey;
+        ? mail.to === "list"
+          ? { x: LIST.x + 20, y: LIST.y + 38, opacity: 1, scale: 0.9 }
+          : { x: end.x - PILL_W / 2, y: end.y - 14, opacity: 1, scale: 0.85 }
+        : mail.to === "list"
+          ? { x: LIST.x + 20, y: LIST.y + 38, opacity: 0, scale: 0.9 }
+          : { x: end.x - PILL_W / 2, y: end.y - 100, opacity: 0, scale: 0.8 };
 
-  const litFolder: FolderId | null = phase >= 1 ? mail.folder : null;
-  const litTarget: Target | null = phase >= 2 ? mail.to : null;
+  const litTarget: Target | null = phase >= 1 ? mail.to : null;
 
   return (
     <div ref={ref} className="absolute inset-0">
       <Heading x={SOURCE.x} width={PILL_W}>
         New mail
       </Heading>
-      <Heading x={KEYS.x} width={KEYS.width}>
-        One of four places
-      </Heading>
       <Heading x={CARD.x} width={LIST.width}>
-        In the Inbox: a category, or your list
+        Filed into a category, or left in your list
       </Heading>
 
       <svg className="absolute inset-0" width={FW} height={FH} fill="none">
-        {FOLDERS.map((folder, i) => (
-          <Wire key={folder.id} from={{ x: SOURCE.x + PILL_W, y: SOURCE.y + 30 }} to={{ x: KEYS.x, y: keyY(i) }} lit={phase === 1 && litFolder === folder.id} />
-        ))}
         {([...CARDS, "list"] as Target[]).map((to) => {
           const p = targetPoint(to);
           return (
             <Wire
               key={to}
-              from={{ x: KEYS.x + KEYS.width, y: keyY(0) }}
-              to={to === "list" ? p : { x: p.x, y: p.y - 14 }}
-              lit={phase === 2 && litTarget === to}
+              from={{ x: SOURCE.x + PILL_W + 6, y: SOURCE.y + 30 }}
+              to={to === "list" ? p : { x: p.x, y: p.y + 4 }}
+              lit={phase === 1 && litTarget === to}
               vertical={to !== "list"}
             />
           );
@@ -151,30 +143,10 @@ function Flow() {
       {/* The incoming slot. */}
       <div className="corner-squircle absolute rounded-[16px]" style={{ left: SOURCE.x - 6, top: SOURCE.y - 6, width: PILL_W + 12, height: 72, boxShadow: "var(--pressed)" }} />
 
-      {/* The four places. */}
-      <div className="plate-1 corner-squircle absolute flex flex-col gap-1 rounded-[22px] p-2" style={{ left: KEYS.x, top: KEYS.y, width: KEYS.width }}>
-        {FOLDERS.map(({ id, label, icon: Icon }) => (
-          <div
-            key={id}
-            className={cn(
-              "corner-squircle flex h-[72px] items-center gap-3 rounded-[16px] px-4 transition-all duration-300",
-              litFolder === id ? FOLDER_ACTIVE[id] : "text-foreground",
-            )}
-          >
-            <Icon className="size-7" strokeWidth={1.7} />
-            <span className="text-[17px] font-medium">{label}</span>
-          </div>
-        ))}
-      </div>
-
       {/* The category cards. */}
       {CARDS.map((id, i) => (
         <div key={id} className="absolute" style={{ left: cardX(i), top: CARD.y, width: CARD.width }}>
-          <FlowCard
-            category={CATEGORIES.find((c) => c.id === id)!}
-            added={landed.filter((m) => m.to === id)}
-            lit={litTarget === id}
-          />
+          <FlowCard category={CATEGORIES.find((c) => c.id === id)!} added={landed.filter((m) => m.to === id)} lit={litTarget === id && phase >= 1} />
         </div>
       ))}
 

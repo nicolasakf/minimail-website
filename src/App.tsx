@@ -3,9 +3,8 @@ import { AgentSection } from "~/scenes/agent";
 import { CategoriesSection } from "~/scenes/categories";
 import { AccountsSection, ClosingSection } from "~/scenes/closing";
 import { HeroSection } from "~/scenes/hero-section";
-import { MinimumSection } from "~/scenes/minimum";
+import { MinimumSection, RulesSection } from "~/scenes/minimum";
 import { ProblemsSection } from "~/scenes/problems";
-import { QualitiesSection } from "~/scenes/qualities";
 
 export function App() {
   return (
@@ -17,8 +16,7 @@ export function App() {
         <ProblemsSection />
         <MinimumSection />
         <CategoriesSection />
-        <Groove />
-        <QualitiesSection />
+        <RulesSection />
         <Groove />
         <AgentSection />
         <Groove />

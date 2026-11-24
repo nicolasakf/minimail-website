@@ -29,10 +29,10 @@ export function CategoriesSection() {
     <Section id="categories">
       <div className="grid items-center gap-12 lg:grid-cols-[1fr_640px]">
         <div>
-          <Title>These categories sort themselves.</Title>
+          <Title>Describe your categories your way.</Title>
           <Lead className="mt-5">
-            Newsletters, ads, notifications and codes each collapse into one card. You describe what belongs in a category, in
-            your own words, exceptions included, and AI files the mail for you.
+            Add, rename or remove categories, and write what belongs in each one in plain words, exceptions included. AI files
+            your mail by what you wrote.
           </Lead>
           <p className="mt-6 text-sm text-muted-foreground">AI sorting needs your own key. Without one, mail is still sorted by simple rules.</p>
         </div>
