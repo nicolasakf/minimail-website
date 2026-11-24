@@ -251,8 +251,8 @@ function BloatScene() {
 
 export function BloatSection() {
   return (
-    <Section id="sorting">
-      <div className="grid items-center gap-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+    <Section id="sorting" className="-mt-12 pt-0 md:-mt-20 md:pt-0">
+      <div className="plate-1 corner-squircle grid items-center gap-12 rounded-[40px] p-7 md:p-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <div>
           <Lead>
             Traditional email clients are bloated with features you don't need: folders inside folders, labels, filters and rules,
