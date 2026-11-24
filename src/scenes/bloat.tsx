@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { EASE, useLoop } from "~/lib/motion";
 import { Lead, Reveal, Section } from "~/parts/site";
 import { Stage } from "~/parts/stage";
+import { FOLDER_ACTIVE } from "~/parts/window";
 
 const W = 720;
 const H = 520;
@@ -143,24 +144,40 @@ function OldClient({ grown, cycle }: { grown: boolean; cycle: number }) {
   );
 }
 
-function Place({ icon: Icon, label, on, show, delay }: { icon: LucideIcon; label: string; on?: boolean; show: boolean; delay: number }) {
+interface PlaceInfo {
+  icon: LucideIcon;
+  label: string;
+  on?: boolean;
+}
+
+/** A row of places: the keys sit in one plate, and their names are written under it, as in the app's own picture. */
+function Places({ items, show, delay, className }: { items: PlaceInfo[]; show: boolean; delay: number; className?: string }) {
+  const motionProps = (i: number) => ({
+    initial: false,
+    animate: { opacity: show ? 1 : 0, scale: show ? 1 : 0.8, y: show ? 0 : 10 },
+    transition: { duration: 0.45, delay: show ? delay + i * 0.1 : 0, ease: EASE },
+  });
   return (
-    <motion.div
-      initial={false}
-      animate={{ opacity: show ? 1 : 0, scale: show ? 1 : 0.8, y: show ? 0 : 10 }}
-      transition={{ duration: 0.45, delay: show ? delay : 0, ease: EASE }}
-      className="flex w-16 flex-col items-center gap-1.5"
-    >
-      <span
-        className={cn(
-          "corner-squircle flex size-16 items-center justify-center rounded-[18px]",
-          on ? "grain bg-[hsl(218.8_61.5%_52.2%/0.15)] text-sidebar-primary shadow-pressed" : "text-foreground",
-        )}
-      >
-        <Icon className="size-7" strokeWidth={1.7} />
-      </span>
-      <span className={cn("text-[14px] font-medium", on ? "text-sidebar-primary" : "text-muted-foreground")}>{label}</span>
-    </motion.div>
+    <div className={className}>
+      <div className="plate-1 corner-squircle flex justify-between rounded-[26px] p-2">
+        {items.map(({ icon: Icon, label, on }, i) => (
+          <motion.span
+            key={label}
+            {...motionProps(i)}
+            className={cn("corner-squircle flex size-[66px] items-center justify-center rounded-[20px]", on ? FOLDER_ACTIVE.inbox : "text-foreground")}
+          >
+            <Icon className="size-8" strokeWidth={1.7} />
+          </motion.span>
+        ))}
+      </div>
+      <div className="mt-2.5 flex justify-between px-2">
+        {items.map(({ label, on }, i) => (
+          <motion.span key={label} {...motionProps(i)} className={cn("w-[66px] text-center text-[15px] font-medium", on ? "text-sidebar-primary" : "text-muted-foreground")}>
+            {label}
+          </motion.span>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -199,16 +216,25 @@ function BloatScene() {
         MiniMail
       </div>
       <div className="absolute" style={{ left: 410, top: 34, width: 310 }}>
-        <div className="plate-1 corner-squircle flex justify-between rounded-[26px] px-3.5 pb-3 pt-3.5">
-          <Place icon={Inbox} label="Inbox" on show={answered} delay={0.1} />
-          <Place icon={Archive} label="Archive" show={answered} delay={0.2} />
-          <Place icon={Trash2} label="Trash" show={answered} delay={0.3} />
-          <Place icon={ShieldAlert} label="Spam" show={answered} delay={0.4} />
-        </div>
-        <div className="plate-1 corner-squircle mx-auto mt-6 flex w-[176px] justify-between rounded-[26px] px-3.5 pb-3 pt-3.5">
-          <Place icon={Send} label="Sent" show={answered} delay={0.6} />
-          <Place icon={SquarePen} label="Drafts" show={answered} delay={0.7} />
-        </div>
+        <Places
+          show={answered}
+          delay={0.1}
+          items={[
+            { icon: Inbox, label: "Inbox", on: true },
+            { icon: Archive, label: "Archive" },
+            { icon: Trash2, label: "Trash" },
+            { icon: ShieldAlert, label: "Spam" },
+          ]}
+        />
+        <Places
+          className="mx-auto mt-6 w-[172px]"
+          show={answered}
+          delay={0.6}
+          items={[
+            { icon: Send, label: "Sent" },
+            { icon: SquarePen, label: "Drafts" },
+          ]}
+        />
       </div>
       <motion.p
         className="absolute text-[17px] font-medium"
