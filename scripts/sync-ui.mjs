@@ -44,6 +44,10 @@ for (const logo of ["minimail-glyph.svg", "minimail-light.svg", "minimail-round.
 // The app icon, as drawn for the Dock (macOS `sips` turns the .icns into a PNG).
 try {
   execFileSync("sips", ["-s", "format", "png", "-Z", "512", resolve(app, "build/icon.icns"), "--out", resolve(site, "public/app-icon.png")], { stdio: "ignore" });
+  // The tab icon and the home-screen icon are the same picture, smaller.
+  for (const [size, name] of [["64", "favicon.png"], ["180", "apple-touch-icon.png"]]) {
+    execFileSync("sips", ["-Z", size, resolve(site, "public/app-icon.png"), "--out", resolve(site, "public", name)], { stdio: "ignore" });
+  }
 } catch {
   console.warn("Could not convert build/icon.icns (needs macOS sips); public/app-icon.png was left as it was.");
 }
