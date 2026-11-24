@@ -21,15 +21,15 @@ body {
 
 /* A note laid over a demo: matte, a little see-through, and with a soft shadow. */
 .note-plate {
-  background-color: hsl(30 14% 22% / 0.94);
+  background-color: hsl(38 22% 22% / 0.94);
   background-image: url("./minimail/assets/grain-light.png");
   background-size: var(--grain-size);
-  color: hsl(36 30% 96%);
+  color: hsl(38 30% 96%);
   backdrop-filter: blur(10px);
   box-shadow:
-    1.4px 1.4px 1.5px rgb(40 32 26 / 0.3),
+    1.4px 1.4px 1.5px rgb(38 31 22 / 0.3),
     inset 0.7px 0.7px 0 rgb(255 255 255 / 0.14),
-    0 8px 20px rgb(40 32 26 / 0.28);
+    0 8px 20px rgb(38 31 22 / 0.28);
 }
 
 /* The part of the hero window a note is about rises a little. */
