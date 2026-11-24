@@ -70,7 +70,8 @@ function MiniRow({ from, subject, unread, icon }: { from: Sender; subject: strin
 /* ---------------------------------------------------------------- The rules ---------------------------------------------------------------- */
 
 const RW = 1200;
-const RH = 380;
+const CARD_H = 380;
+const RH = CARD_H + 96;
 
 const PRIORITY_CARD = { hue: 40, icon: "Zap" as const };
 
@@ -81,13 +82,15 @@ interface Rule {
   tone: string;
   who: Sender;
   subject: string;
+  /** One line under the card: what the rule does. */
+  text: string;
 }
 
 const RULES: Rule[] = [
-  { id: "priority", label: "Priority", icon: Zap, tone: "text-amber", who: B.northwindMarket, subject: "Your refund was approved" },
-  { id: "mute", label: "Muted", icon: BellOff, tone: "text-purple", who: B.litware, subject: "Weekly activity summary" },
-  { id: "block", label: "Blocked", icon: ShieldBan, tone: "text-destructive", who: B.wingtip, subject: "LAST CHANCE: 70% off" },
-  { id: "unsub", label: "Unsubscribe", icon: ListX, tone: "text-foreground", who: B.lucerne, subject: "This week: 12 stories" },
+  { id: "priority", label: "Priority", icon: Zap, tone: "text-amber", who: B.northwindMarket, subject: "Your refund was approved", text: "Always notifies you, and gathers their mail in a Priority card." },
+  { id: "mute", label: "Muted", icon: BellOff, tone: "text-purple", who: B.litware, subject: "Weekly activity summary", text: "Their mail still arrives, but never makes a notification." },
+  { id: "block", label: "Blocked", icon: ShieldBan, tone: "text-destructive", who: B.wingtip, subject: "LAST CHANCE: 70% off", text: "Their mail goes straight to the Trash, before you see it." },
+  { id: "unsub", label: "Unsubscribe", icon: ListX, tone: "text-foreground", who: B.lucerne, subject: "This week: 12 stories", text: "Asks the list to drop you. It asks first, since it can't be undone." },
 ];
 
 function Rules() {
@@ -104,11 +107,20 @@ function Rules() {
 }
 
 function RuleColumn({ rule, step, delay }: { rule: Rule; step: number; delay: number }) {
+  return (
+    <div className="flex flex-col">
+      <RuleCard rule={rule} step={step} delay={delay} />
+      <p className="mt-4 px-2 text-[17px] leading-snug text-muted-foreground">{rule.text}</p>
+    </div>
+  );
+}
+
+function RuleCard({ rule, step, delay }: { rule: Rule; step: number; delay: number }) {
   const arrived = step >= 1 && step < 3;
   const outcome = step === 2;
   const Icon = rule.icon;
   return (
-    <div className="plate-1 corner-squircle relative flex flex-col overflow-hidden rounded-[26px] p-5">
+    <div className="plate-1 corner-squircle relative flex flex-col overflow-hidden rounded-[26px] p-5" style={{ height: CARD_H }}>
       {/* The rule */}
       <div className="flex items-center gap-2.5">
         <span className={cn("plate-2 flex size-9 items-center justify-center rounded-full", rule.tone)}>
