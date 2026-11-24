@@ -203,7 +203,7 @@ function BloatScene() {
       {/* The way across */}
       <motion.span
         className="absolute flex size-11 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground shadow-raise-2"
-        style={{ left: 349, top: 198 }}
+        style={{ left: 349, top: 212 }}
         initial={false}
         animate={{ scale: answered ? 1 : 0.7, opacity: answered ? 1 : 0.25 }}
         transition={{ type: "spring", stiffness: 380, damping: 18 }}
@@ -215,7 +215,7 @@ function BloatScene() {
       <div className="absolute text-[12px] font-semibold uppercase tracking-[0.2em] text-sidebar-primary" style={{ left: 410, top: 4 }}>
         MiniMail
       </div>
-      <div className="absolute" style={{ left: 410, top: 34, width: 310 }}>
+      <div className="absolute" style={{ left: 410, top: 108, width: 310 }}>
         <Places
           show={answered}
           delay={0.1}
