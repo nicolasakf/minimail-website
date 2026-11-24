@@ -21,7 +21,7 @@ body {
 
 /* A note laid over a demo: matte, a little see-through, and with a soft shadow. */
 .note-plate {
-  background-color: hsl(38 28% 92% / 0.88);
+  background-color: hsl(36 18% 80% / 0.94);
   background-image: url("./minimail/assets/grain-light.png");
   background-size: var(--grain-size);
   color: hsl(32 10% 19%);

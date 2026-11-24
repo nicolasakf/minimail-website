@@ -224,11 +224,11 @@ function Callout({ index, note }: { index: number; note: Note }) {
     <div className="note-plate corner-squircle rounded-[14px] px-3.5 py-3 text-[13px]">
       <div className="flex items-center gap-2">
         <span className="font-semibold">{note.title}</span>
-        <span className="ml-auto text-[11px] font-medium tabular-nums text-[hsl(32_6%_45%)]">
+        <span className="ml-auto text-[11px] font-medium tabular-nums text-[hsl(32_8%_32%)]">
           {index + 1} / {NOTES.length}
         </span>
       </div>
-      <p className="mt-1 leading-snug text-[hsl(32_6%_36%)]">{note.text}</p>
+      <p className="mt-1 leading-snug text-[hsl(32_10%_24%)]">{note.text}</p>
     </div>
   );
 }
