@@ -144,7 +144,7 @@ function Overwhelming() {
   const ads = ADS.slice(0, Math.min(step, ADS.length)).reverse();
   return (
     <Screen verdict={step === 6 ? "The mail that matters is buried." : undefined}>
-      <div ref={ref}>
+      <div ref={ref} className="h-[calc(100%-52px)] overflow-hidden">
         <div className="flex h-8 items-center px-1.5 text-[15px] font-semibold">Inbox</div>
         <AnimatePresence initial={false}>
           {ads.map((ad) => (
@@ -197,7 +197,16 @@ export function ProblemsSection() {
   return (
     <Section id="why">
       <div className="max-w-[720px]">
-        <Title>Email got overcomplicated.</Title>
+        <Title>Why MiniMail?</Title>
+        <motion.h3
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.6 }}
+          transition={{ duration: 0.7, delay: 0.08, ease: EASE }}
+          className="mt-4 text-balance text-[22px] font-medium leading-snug text-muted-foreground md:text-[28px]"
+        >
+          Email got overcomplicated over the years.
+        </motion.h3>
       </div>
       <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {PROBLEMS.map((problem, i) => (
