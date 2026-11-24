@@ -153,17 +153,13 @@ const ACCOUNTS = [
   {
     mark: (
       <span className="flex items-center gap-2">
-        <AccountMark account="zoho" size={30} />
+        <AccountMark account="zoho" size={28} />
         <Cloud className="size-7 text-sidebar-primary" strokeWidth={1.7} />
+        <Server className="size-6 text-foreground/80" strokeWidth={1.7} />
       </span>
     ),
-    name: "Zoho, iCloud and more",
-    text: "Well-known providers work with your address and password.",
-  },
-  {
-    mark: <Server className="size-7 text-foreground/80" strokeWidth={1.7} />,
-    name: "Any other IMAP account",
-    text: "Easy to set up by hand: just your server, port and login.",
+    name: "Zoho, iCloud and any other IMAP account",
+    text: "Well-known providers work with your address and password. Any other IMAP account is easy to set up by hand: just your server, port and login.",
   },
 ];
 
@@ -192,7 +188,7 @@ export function AccountsSection() {
         <h3 className="text-balance text-[28px] font-bold leading-tight tracking-[-0.02em] md:text-[36px]">One inbox for all your accounts.</h3>
         <p className="mx-auto mt-3 max-w-[520px] text-pretty text-[17px] leading-relaxed text-muted-foreground">Connect as many as you like, in one list.</p>
       </div>
-      <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-10 grid gap-5 md:grid-cols-3">
         {ACCOUNTS.map((account, i) => (
           <Reveal key={account.name} delay={i * 0.08} className="plate-1 corner-squircle flex flex-col rounded-[26px] p-6">
             <span className="plate-2 corner-squircle flex h-16 w-fit min-w-16 items-center justify-center rounded-[18px] px-4">{account.mark}</span>
