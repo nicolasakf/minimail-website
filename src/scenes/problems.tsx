@@ -1,266 +1,188 @@
 /**
- * "Email got overcomplicated": four short stories of what other mail apps do. They are drawn as a generic,
- * flat old mail app sunk into the plastic, so they never read as MiniMail. Each ends on one plain sentence.
+ * "Email got overcomplicated": four very short stories, drawn in the app's own design language (plates, rows, pills).
+ * Each one shows a single thing going wrong and ends on one plain sentence.
  */
 import { useRef, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Check, CircleAlert, LoaderCircle, Paperclip, Search, Star, TriangleAlert } from "lucide-react";
+import { Check, LoaderCircle, Search, TriangleAlert } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { B, P, type Sender } from "~/lib/demo";
 import { EASE, useLoop, useTyping } from "~/lib/motion";
+import { Avatar } from "~/parts/mail";
 import { Lead, Reveal, Section, Title } from "~/parts/site";
 
-/** A flat, grey screen of some other mail app, set into the plate. */
-function OldScreen({ children, className }: { children: ReactNode; className?: string }) {
+/** A small screen of the app: one plate set into the card. */
+function Screen({ children, verdict, tone = "muted" }: { children: ReactNode; verdict?: ReactNode; tone?: "muted" | "bad" }) {
   return (
-    <div
-      className={cn(
-        "relative h-[220px] overflow-hidden rounded-[14px] border border-[#c9c6c0] bg-[#f6f6f4] font-[Arial,Helvetica,sans-serif] text-[12px] text-[#333]",
-        className,
-      )}
-      style={{ boxShadow: "var(--stamped)" }}
-    >
+    <div className="plate-2 corner-squircle relative h-[230px] overflow-hidden rounded-[20px] p-3">
       {children}
+      <AnimatePresence>
+        {verdict && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: EASE }}
+            className={cn(
+              "plate-3 corner-squircle absolute inset-x-3 bottom-3 flex items-center justify-center gap-2 rounded-[12px] px-3 py-2 text-center text-[13px] font-semibold",
+              tone === "bad" ? "text-destructive" : "text-foreground",
+            )}
+          >
+            {verdict}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function TitleBar({ children }: { children: ReactNode }) {
-  return <div className="flex h-8 shrink-0 items-center gap-2 border-b border-[#d8d6d2] bg-[#ecebe8] px-3 font-bold">{children}</div>;
-}
-
-function OldRow({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn("flex h-[27px] items-center gap-2 border-b border-[#e2e0dc] px-3", className)}>{children}</div>;
-}
-
-/** The sentence a story ends on, over the old screen. */
-function Verdict({ children, show }: { children: ReactNode; show: boolean }) {
+function Row({ from, title, sub, unread, className }: { from: Sender; title: string; sub?: string; unread?: boolean; className?: string }) {
   return (
-    <AnimatePresence>
-      {show && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.4, ease: EASE }}
-          className="absolute inset-x-3 bottom-3 rounded-[10px] bg-[#2b2622]/90 px-3 py-2 text-center font-sans text-[13px] font-semibold text-white"
-        >
-          {children}
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div className={cn("flex h-[42px] items-center gap-2.5 rounded-xl px-1.5", className)}>
+      <span className={cn("size-2 shrink-0 rounded-full", unread && "bg-unread")} />
+      <Avatar sender={from} size={26} />
+      <div className="min-w-0 flex-1 leading-tight">
+        <div className={cn("truncate text-[13px]", unread ? "font-semibold" : "font-medium")}>{title}</div>
+        {sub && <div className="truncate text-[11.5px] text-muted-foreground">{sub}</div>}
+      </div>
+    </div>
   );
 }
 
-/** One frame of a story, faded in place of the one before. */
-function Frame({ id, children }: { id: string; children: ReactNode }) {
-  return (
-    <motion.div
-      key={id}
-      className="absolute inset-0 flex flex-col"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.35 }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-/* ---------- Slow: the bar crawls, the clock runs, nothing shows. ---------- */
+/* ---------- Slow: the list never fills in. ---------- */
 
 function Slow() {
   const ref = useRef<HTMLDivElement>(null);
-  const { step } = useLoop(ref, [800, 900, 1000, 1200, 1400, 2600], 5);
-  const percent = [6, 22, 37, 49, 52, 52][step];
-  const seconds = [2, 5, 9, 14, 21, 34][step];
+  const { step } = useLoop(ref, [900, 1100, 1300, 3000], 3);
+  const seconds = [3, 9, 21, 34][step];
   return (
-    <OldScreen>
-      <div ref={ref} className="flex h-full flex-col">
-        <TitleBar>Inbox</TitleBar>
-        <div className="flex flex-col items-center px-4 pt-5">
-          <div className="flex items-center gap-2 text-[#555]">
-            <LoaderCircle className="size-4 animate-spin text-[#4a77c9]" />
-            Loading messages…
-          </div>
-          <div className="mt-2 font-sans text-[30px] font-bold tabular-nums text-[#333]">0:{String(seconds).padStart(2, "0")}</div>
-          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[#dedcd8]">
-            <motion.div className="h-full bg-[#4a77c9]" animate={{ width: `${percent}%` }} transition={{ duration: 0.6, ease: EASE }} />
-          </div>
+    <Screen verdict={step === 3 ? "Still loading." : undefined}>
+      <div ref={ref}>
+        <div className="flex h-8 items-center px-1.5">
+          <span className="text-[15px] font-semibold">Inbox</span>
+          <span className="ml-auto flex items-center gap-2 text-[13px] tabular-nums text-muted-foreground">
+            <LoaderCircle className="size-4 animate-spin text-sidebar-primary" />0:{String(seconds).padStart(2, "0")}
+          </span>
         </div>
-        <div className="mt-3">
-          {[0, 1].map((i) => (
-            <OldRow key={i}>
-              <span className="h-2 w-16 animate-pulse rounded bg-[#dedcd8]" />
-              <span className="h-2 flex-1 animate-pulse rounded bg-[#e6e4e0]" />
-            </OldRow>
-          ))}
-        </div>
-        <Verdict show={step === 5}>Still waiting for your inbox.</Verdict>
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="flex h-[42px] items-center gap-2.5 px-1.5">
+            <span className="size-2" />
+            <span className="size-[26px] shrink-0 animate-pulse rounded-lg bg-foreground/10" style={{ animationDelay: `${i * 150}ms` }} />
+            <div className="flex-1 space-y-1.5">
+              <span className="block h-2.5 w-1/2 animate-pulse rounded bg-foreground/10" style={{ animationDelay: `${i * 150}ms` }} />
+              <span className="block h-2 w-4/5 animate-pulse rounded bg-foreground/[0.07]" style={{ animationDelay: `${i * 150 + 80}ms` }} />
+            </div>
+          </div>
+        ))}
       </div>
-    </OldScreen>
+    </Screen>
   );
 }
 
-/* ---------- Unreliable: it said "Sent". It never left. ---------- */
+/* ---------- Unreliable: it said sent, and it never arrived. One message, one status that changes. ---------- */
 
 function Unreliable() {
   const ref = useRef<HTMLDivElement>(null);
-  const { step } = useLoop(ref, [1500, 1500, 2200, 3200], 3);
+  const { step } = useLoop(ref, [1300, 1700, 3300], 2);
   return (
-    <OldScreen>
-      <div ref={ref} className="absolute inset-0">
-        <AnimatePresence mode="wait">
-          {step === 0 && (
-            <Frame id="compose">
-              <TitleBar>New message</TitleBar>
-              <OldRow>
-                <span className="w-12 text-[#777]">To</span> Sam Okafor
-              </OldRow>
-              <OldRow>
-                <span className="w-12 text-[#777]">Subject</span> Signed contract
-              </OldRow>
-              <div className="flex-1 px-3 py-2 text-[#555]">
-                Here it is, signed.
-                <div className="mt-2 flex w-fit items-center gap-1 rounded border border-[#d0cdc7] bg-white px-1.5 py-0.5">
-                  <Paperclip className="size-3" /> contract.pdf
-                </div>
-              </div>
-              <div className="flex justify-end px-3 pb-3">
-                <motion.span
-                  className="rounded border border-[#3d66b3] bg-[#4a77c9] px-4 py-1 font-bold text-white"
-                  animate={{ scale: [1, 1, 0.92, 1] }}
-                  transition={{ duration: 1.2, times: [0, 0.7, 0.8, 1] }}
-                >
-                  Send
-                </motion.span>
-              </div>
-            </Frame>
-          )}
-          {step === 1 && (
-            <Frame id="sent">
-              <TitleBar>Inbox</TitleBar>
-              <div className="flex flex-1 items-center justify-center">
-                <div className="flex items-center gap-2 rounded-full border border-[#b9d8bf] bg-[#e7f5ea] px-4 py-2 text-[14px] font-bold text-[#2c7a3f]">
-                  <Check className="size-4" /> Message sent
-                </div>
-              </div>
-            </Frame>
-          )}
-          {step === 2 && (
-            <Frame id="later">
-              <div className="flex flex-1 flex-col justify-center gap-3 bg-[#eef0f3] px-4 font-sans">
-                <div className="text-center text-[11px] font-semibold uppercase tracking-wide text-[#8a8f98]">Two days later</div>
-                <div className="flex items-end gap-2">
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#c9b5e0] text-[11px] font-bold text-[#4a3566]">SO</span>
-                  <div className="rounded-[16px] rounded-bl-[4px] bg-white px-3 py-2 text-[13.5px] leading-snug text-[#222] shadow-sm">
-                    Did you send the contract? I never got it.
-                  </div>
-                </div>
-              </div>
-            </Frame>
-          )}
-          {step === 3 && (
-            <Frame id="outbox">
-              <TitleBar>Outbox (1)</TitleBar>
-              <OldRow className="bg-[#fdecea]">
-                <TriangleAlert className="size-3.5 shrink-0 text-[#c0392b]" />
-                <span className="font-bold">Signed contract</span>
-                <span className="ml-auto text-[#c0392b]">Not sent</span>
-              </OldRow>
-              <div className="px-3 py-2 text-[11px] text-[#888]">Error 0x800CCC0E. Will retry later.</div>
-            </Frame>
-          )}
-        </AnimatePresence>
-        <Verdict show={step === 3}>It said "sent". It never left.</Verdict>
+    <Screen verdict={step === 2 ? "No error. No explanation." : undefined} tone="bad">
+      <div ref={ref} className="flex h-[calc(100%-52px)] flex-col justify-center gap-5">
+        <div className="plate-1 corner-squircle flex items-center gap-3 rounded-[16px] px-3 py-3">
+          <Avatar sender={P.sam} size={34} />
+          <div className="min-w-0 leading-tight">
+            <div className="truncate text-[14px] font-semibold">Signed contract</div>
+            <div className="truncate text-[12px] text-muted-foreground">To Sam Okafor</div>
+          </div>
+        </div>
+        <div className="flex justify-center">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={step}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.25 }}
+              className="plate-3 corner-squircle flex items-center gap-2 rounded-full px-4 py-2 text-[15px] font-semibold"
+            >
+              {step === 0 && (
+                <>
+                  <LoaderCircle className="size-4 animate-spin text-muted-foreground" /> Sending…
+                </>
+              )}
+              {step === 1 && (
+                <>
+                  <Check className="size-4 text-success" /> Sent
+                </>
+              )}
+              {step === 2 && (
+                <>
+                  <TriangleAlert className="size-4 text-amber" /> Sam never got it
+                </>
+              )}
+            </motion.span>
+          </AnimatePresence>
+        </div>
       </div>
-    </OldScreen>
+    </Screen>
   );
 }
 
-/* ---------- Overwhelming: ads pile up and push the one email that matters out of sight. ---------- */
+/* ---------- Overwhelming: ads pile in and push the real mail out of view. ---------- */
 
-const ADS = [
-  "FLASH SALE: 60% off everything",
-  "We miss you! Come back for 20%",
-  "Your weekly digest is here",
-  "Last chance: deals end tonight",
-  "You've been selected for a reward",
-  "New arrivals you'll love",
+const ADS: { from: Sender; title: string }[] = [
+  { from: B.wingtip, title: "FLASH SALE: 60% off everything" },
+  { from: B.coho, title: "We miss you! Here's 20% off" },
+  { from: B.alpine, title: "Last chance: deals end tonight" },
+  { from: B.fourth, title: "You've been selected for a reward" },
+  { from: B.blueYonder, title: "New arrivals you'll love" },
 ];
 
 function Overwhelming() {
   const ref = useRef<HTMLDivElement>(null);
-  const { step } = useLoop(ref, [1400, 600, 600, 600, 600, 600, 600, 2800], 7);
-  const shown = ADS.slice(0, Math.min(step, ADS.length)).reverse();
+  const { step } = useLoop(ref, [1200, 650, 650, 650, 650, 650, 2800], 6);
+  const ads = ADS.slice(0, Math.min(step, ADS.length)).reverse();
   return (
-    <OldScreen>
-      <div ref={ref} className="flex h-full flex-col">
-        <TitleBar>
-          Inbox <span className="font-normal text-[#c0392b]">({1204 + Math.min(step, 6) * 7} unread)</span>
-        </TitleBar>
+    <Screen verdict={step === 6 ? "The mail that matters is buried." : undefined}>
+      <div ref={ref}>
+        <div className="flex h-8 items-center px-1.5 text-[15px] font-semibold">Inbox</div>
         <AnimatePresence initial={false}>
-          {shown.map((ad) => (
-            <motion.div key={ad} initial={{ height: 0, opacity: 0 }} animate={{ height: 27, opacity: 1 }} transition={{ duration: 0.3 }}>
-              <OldRow>
-                <span className="rounded-sm bg-[#e8a33a] px-1 text-[9px] font-bold text-white">AD</span>
-                <span className="truncate font-bold">{ad}</span>
-              </OldRow>
+          {ads.map((ad) => (
+            <motion.div key={ad.title} initial={{ height: 0, opacity: 0 }} animate={{ height: 42, opacity: 1 }} transition={{ duration: 0.3, ease: EASE }}>
+              <Row from={ad.from} title={ad.title} sub={ad.from.name} unread />
             </motion.div>
           ))}
         </AnimatePresence>
-        <OldRow className="bg-[#fff8d6]">
-          <Star className="size-3.5 shrink-0 fill-[#f0b400] text-[#d49b00]" />
-          <span className="truncate font-bold">Noor: Kitchen renovation quote</span>
-        </OldRow>
-        <Verdict show={step === 7}>The one email you needed is out of sight.</Verdict>
+        <Row from={P.noor} title="Kitchen renovation quote" sub="Noor Haddad" unread />
       </div>
-    </OldScreen>
+    </Screen>
   );
 }
 
-/* ---------- Hard to search: slow, and the invoice is not among the results. ---------- */
+/* ---------- Hard to search: slow, and not what you asked for. ---------- */
 
 function HardToSearch() {
   const ref = useRef<HTMLDivElement>(null);
-  const { step } = useLoop(ref, [2000, 1800, 3000, 500], 2);
-  const typed = useTyping("invoice from acme", step < 3, 14);
+  const { step } = useLoop(ref, [2000, 1500, 3200], 2);
+  const typed = useTyping("invoice from acme", true, 14);
+  const text = step === 0 ? typed : "invoice from acme";
   return (
-    <OldScreen>
-      <div ref={ref} className="flex h-full flex-col">
-        <div className="flex h-9 items-center border-b border-[#d8d6d2] bg-[#ecebe8] px-3">
-          <div className="flex h-6 flex-1 items-center gap-1.5 rounded-sm border border-[#bdbab4] bg-white px-2">
-            <Search className="size-3.5 text-[#777]" />
-            <span>{step === 3 ? "" : typed}</span>
-            {step === 0 && <span className="h-3.5 w-px animate-pulse bg-[#333]" />}
-          </div>
+    <Screen verdict={step === 2 ? "Not the invoice." : undefined}>
+      <div ref={ref}>
+        <div className="corner-squircle flex h-10 items-center gap-2 rounded-[12px] px-3 text-[14px] shadow-pressed">
+          <Search className="size-4 text-muted-foreground" />
+          <span>{text}</span>
+          {step === 0 && <span className="h-4 w-px animate-pulse bg-foreground" />}
+          {step === 1 && <LoaderCircle className="ml-auto size-4 animate-spin text-sidebar-primary" />}
         </div>
-        {step === 1 && (
-          <div className="flex flex-1 items-center justify-center gap-2 text-[#777]">
-            <LoaderCircle className="size-4 animate-spin" /> Searching all mailboxes…
-          </div>
-        )}
         {step === 2 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1">
-            <div className="px-3 py-1.5 text-[#777]">3 results (12.4 s)</div>
-            <OldRow>
-              <span className="truncate">Acme newsletter: March highlights</span>
-            </OldRow>
-            <OldRow>
-              <span className="truncate">Invitation: Acme spring party</span>
-            </OldRow>
-            <OldRow>
-              <span className="truncate">Re: re: fwd: notes from Acme</span>
-            </OldRow>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 text-[#c0392b]">
-              <CircleAlert className="size-3.5" /> No invoice.
-            </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-2">
+            <Row from={B.acme} title="Acme newsletter: March" sub="Newsletter" />
+            <Row from={B.acme} title="Acme spring party" sub="Invitation" />
           </motion.div>
         )}
-        <Verdict show={step === 2}>12 seconds, and not what you asked for.</Verdict>
       </div>
-    </OldScreen>
+    </Screen>
   );
 }
 

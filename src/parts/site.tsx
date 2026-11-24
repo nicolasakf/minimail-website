@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 import { EASE } from "~/lib/motion";
 
 export const LINKS = {
-  download: "https://github.com/nicolasakf/MiniMail/releases/latest",
+  /** Answered by api/download.js: redirects to the newest .dmg, so the download starts at once. */
+  download: "/download",
   github: "https://github.com/nicolasakf/MiniMail",
   guide: "https://github.com/nicolasakf/MiniMail/blob/main/docs/guide.md",
   license: "https://github.com/nicolasakf/MiniMail/blob/main/LICENSE",

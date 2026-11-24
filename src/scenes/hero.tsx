@@ -73,9 +73,9 @@ export function HeroScene({ progress, maxHeight }: { progress: MotionValue<numbe
 }
 
 function noteFor(value: number): number {
-  // The first stretch of the scroll shows the window alone, then one note per stretch.
-  const index = Math.floor(value * (NOTES.length + 1)) - 1;
-  return Math.max(-1, Math.min(NOTES.length - 1, index));
+  // The window alone, then one note per stretch, then the window alone again, sharp.
+  const index = Math.floor(value * (NOTES.length + 2)) - 1;
+  return index >= NOTES.length ? -1 : Math.max(-1, index);
 }
 
 function HeroWindow({ progress }: { progress: MotionValue<number> }) {
@@ -89,7 +89,7 @@ function HeroWindow({ progress }: { progress: MotionValue<number> }) {
         <Rail />
         <div className="flex min-w-0 flex-1 flex-col">
           <ListHeader />
-          <div data-note="cards" className="grid grid-cols-5 gap-4 py-4 pl-1 pr-5">
+          <div data-note="cards" data-fit="children" className="grid grid-cols-5 gap-4 py-4 pl-1 pr-5">
             {SHOWN.map((id) => {
               const category = CATEGORIES.find((c) => c.id === id)!;
               return (
@@ -143,8 +143,19 @@ function Spotlight({ root, index }: { root: RefObject<HTMLDivElement | null>; in
     const measure = () => {
       const found: Partial<Record<Note["target"], Box>> = {};
       for (const note of NOTES) {
-        const box = stageRect(stage, root.current?.querySelector(`[data-note="${note.target}"]`) ?? null);
-        if (box) found[note.target] = box;
+        const element = root.current?.querySelector(`[data-note="${note.target}"]`) ?? null;
+        // A part with padding of its own (the card row) is outlined by what is inside it, not by its padding.
+        const parts = element?.getAttribute("data-fit") === "children" ? Array.from(element.children) : [element];
+        const boxes = parts.map((part) => stageRect(stage, part)).filter((b): b is Box => b !== null);
+        if (boxes.length === 0) continue;
+        const x = Math.min(...boxes.map((b) => b.x));
+        const y = Math.min(...boxes.map((b) => b.y));
+        found[note.target] = {
+          x,
+          y,
+          width: Math.max(...boxes.map((b) => b.x + b.width)) - x,
+          height: Math.max(...boxes.map((b) => b.y + b.height)) - y,
+        };
       }
       setBoxes(found);
     };
@@ -155,21 +166,28 @@ function Spotlight({ root, index }: { root: RefObject<HTMLDivElement | null>; in
 
   const note = index >= 0 ? NOTES[index] : null;
   const box = note ? boxes[note.target] : null;
-  const pad = 8;
+  const pad = 12;
   const hole = box ? { x: box.x - pad, y: box.y - pad, width: box.width + pad * 2, height: box.height + pad * 2 } : null;
+
+  // The part being explained rises a little; the rest of the window is blurred.
+  useLayoutEffect(() => {
+    root.current?.querySelectorAll<HTMLElement>("[data-note]").forEach((el) => {
+      el.toggleAttribute("data-lift", el.dataset.note === note?.target);
+    });
+  }, [root, note?.target]);
 
   return (
     <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden rounded-[22px]">
       <AnimatePresence>
-        {hole && (
+        {hole && note && (
           <motion.div
-            key="hole"
-            className="absolute rounded-[18px]"
-            style={{ boxShadow: "0 0 0 2000px rgb(38 34 29 / 0.32), 0 0 0 2px hsl(218.8 61.5% 52.2% / 0.85), 0 0 24px 4px hsl(218.8 61.5% 52.2% / 0.3)" }}
-            initial={{ opacity: 0, ...hole }}
-            animate={{ opacity: 1, ...hole }}
+            key={note.target}
+            className="absolute inset-0 backdrop-blur-[5px]"
+            style={{ ...cutout(hole), backgroundColor: "rgb(235 230 221 / 0.18)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.55, ease: EASE }}
+            transition={{ duration: 0.5, ease: EASE }}
           />
         )}
       </AnimatePresence>
@@ -181,7 +199,7 @@ function Spotlight({ root, index }: { root: RefObject<HTMLDivElement | null>; in
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: EASE, delay: 0.15 }}
-            className="absolute w-[360px]"
+            className="absolute w-[300px]"
             style={{
               left: note.align === "start" ? Math.max(16, hole.x) : undefined,
               right: note.align === "end" ? Math.max(16, HERO_W - (hole.x + hole.width)) : undefined,
@@ -200,17 +218,27 @@ function Spotlight({ root, index }: { root: RefObject<HTMLDivElement | null>; in
 /** The note itself: light plastic, like the page around the window. */
 function Callout({ index, note }: { index: number; note: Note }) {
   return (
-    <div className="light-plate corner-squircle rounded-[18px] p-4 pr-5 text-[15px]">
-      <div className="flex items-center gap-2.5">
-        <span className="flex size-6 items-center justify-center rounded-full bg-[hsl(218.8_61.5%_52.2%)] text-[12px] font-bold text-white">
-          {index + 1}
-        </span>
+    <div className="note-plate corner-squircle rounded-[14px] px-3.5 py-3 text-[13px]">
+      <div className="flex items-center gap-2">
         <span className="font-semibold">{note.title}</span>
-        <span className="ml-auto text-[12px] font-medium text-[hsl(32_6%_45%)]">
+        <span className="ml-auto text-[11px] font-medium tabular-nums text-[hsl(32_6%_45%)]">
           {index + 1} / {NOTES.length}
         </span>
       </div>
-      <p className="mt-1.5 leading-snug text-[hsl(32_6%_32%)]">{note.text}</p>
+      <p className="mt-1 leading-snug text-[hsl(32_6%_36%)]">{note.text}</p>
     </div>
   );
+}
+
+/** A mask that is opaque everywhere except a rounded hole, so only the rest of the window is blurred. */
+function cutout(hole: Box): React.CSSProperties {
+  const { x, y, width: w, height: h } = hole;
+  const r = 20;
+  const d =
+    `M0 0H${HERO_W}V${HERO_H}H0Z ` +
+    `M${x + r} ${y}H${x + w - r}A${r} ${r} 0 0 1 ${x + w} ${y + r}V${y + h - r}A${r} ${r} 0 0 1 ${x + w - r} ${y + h}` +
+    `H${x + r}A${r} ${r} 0 0 1 ${x} ${y + h - r}V${y + r}A${r} ${r} 0 0 1 ${x + r} ${y}Z`;
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${HERO_W}' height='${HERO_H}'><path fill-rule='evenodd' d='${d}'/></svg>`;
+  const url = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+  return { maskImage: url, WebkitMaskImage: url, maskSize: "100% 100%", WebkitMaskSize: "100% 100%" };
 }

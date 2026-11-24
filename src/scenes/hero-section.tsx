@@ -54,11 +54,11 @@ export function HeroSection() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          Free and open source · Gmail, Outlook and any IMAP account
+          Free and open source · macOS on Apple Silicon · Gmail, Outlook and any IMAP account
         </motion.p>
       </div>
 
-      <div ref={tour} className="relative mt-6 md:mt-10" style={{ height: `calc(100vh + ${(NOTES.length + 1) * 38}vh)` }}>
+      <div ref={tour} className="relative mt-6 md:mt-10" style={{ height: `calc(100vh + ${(NOTES.length + 2) * 38}vh)` }}>
         <div className="sticky top-0 flex h-screen items-center px-5 pt-16 md:px-8">
           <motion.div
             className="mx-auto w-full max-w-[1320px]"
