@@ -5,9 +5,9 @@
  */
 import { useRef } from "react";
 import { motion } from "motion/react";
-import { Bell, CalendarPlus, ClipboardCheck, GripVertical, Megaphone, Newspaper, Pencil, Plus, Receipt, Trash2, type LucideIcon } from "lucide-react";
+import { Bell, CalendarPlus, ClipboardCheck, GripVertical, Megaphone, Newspaper, Pencil, Receipt, Trash2, type LucideIcon } from "lucide-react";
 
-import { FLAT_KEY, FLAT_KEY_IN } from "@/components/ui/keys";
+import { FLAT_KEY_IN } from "@/components/ui/keys";
 import { cn } from "@/lib/utils";
 import { CATEGORIES } from "~/lib/demo";
 import { EASE, useLoop, useTyping } from "~/lib/motion";
@@ -15,7 +15,7 @@ import { Lead, Reveal, Section, Title } from "~/parts/site";
 import { Stage } from "~/parts/stage";
 
 const W = 640;
-const H = 640;
+const H = 660;
 
 const describe = (id: string) => CATEGORIES.find((c) => c.id === id)!.description;
 
@@ -34,8 +34,8 @@ export function CategoriesSection() {
         <div>
           <Title>Describe categories your way.</Title>
           <Lead className="mt-5">
-            Add, rename or remove categories, and write what belongs in each one in plain words, exceptions included. AI files
-            your mail by what you wrote.
+            Add, rename or remove categories, and write what belongs in each one in plain words. AI files
+            your mail according to your descriptions.
           </Lead>
         </div>
         <Reveal>
@@ -93,28 +93,12 @@ function EditorScene() {
 
   return (
     <div ref={ref} className="absolute inset-0">
-      <div className="plate-1 corner-squircle absolute inset-0 flex flex-col rounded-[30px] p-6">
+      <div className="plate-1 corner-squircle absolute inset-x-0 top-0 flex flex-col rounded-[30px] p-6">
         <h3 className="text-[22px] font-semibold">Categories</h3>
         <div className="mt-5 flex flex-col">
           {rows.map((row) => (
             <EditorRow key={row.id} row={row} />
           ))}
-        </div>
-        <div className="mt-auto flex items-center gap-2 pt-4 text-sm font-medium">
-          <span className={cn("flex h-9 items-center gap-1.5 rounded-[11px] px-2.5 transition-all duration-150", step === 3 ? "shadow-pressed" : FLAT_KEY)}>
-            <Plus className="size-4" /> Add category
-          </span>
-          <span className={cn("flex h-9 items-center rounded-[11px] px-2.5", FLAT_KEY)}>Sort mail again</span>
-          <span className="flex-1" />
-          <span className="px-2 text-muted-foreground">Revert</span>
-          <span
-            className={cn(
-              "grain corner-squircle flex h-9 items-center rounded-[11px] px-4 transition-all duration-300",
-              step === 6 ? "bg-primary text-primary-foreground shadow-pressed" : "bg-primary/80 text-primary-foreground shadow-raise-1",
-            )}
-          >
-            {step === 6 ? "Saved" : "Save"}
-          </span>
         </div>
       </div>
     </div>
