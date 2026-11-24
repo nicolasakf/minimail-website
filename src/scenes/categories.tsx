@@ -29,7 +29,7 @@ export function CategoriesSection() {
     <Section id="categories">
       <div className="grid items-center gap-12 lg:grid-cols-[1fr_640px]">
         <div>
-          <Title>Describe your categories your way.</Title>
+          <Title>Describe categories your way.</Title>
           <Lead className="mt-5">
             Add, rename or remove categories, and write what belongs in each one in plain words, exceptions included. AI files
             your mail by what you wrote.
