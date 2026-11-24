@@ -10,6 +10,9 @@ import { HeroScene, NOTES, TOUR_STRETCHES, noteFor } from "~/scenes/hero";
 /** How far the page scrolls for each step of the tour, as a share of the screen height. */
 const STEP_VH = 70;
 
+/** A word or two for each step of the tour, in the order of the notes. */
+const STEP_LABELS = ["Categories", "List", "Views", "Accounts", "Folders"];
+
 export function HeroSection() {
   const tour = useRef<HTMLDivElement>(null);
   const viewport = useViewportHeight();
@@ -64,7 +67,7 @@ export function HeroSection() {
       </div>
 
       <div ref={tour} className="relative mt-6 md:mt-10" style={{ height: `calc(100vh + ${TOUR_STRETCHES * STEP_VH}vh)` }}>
-        <div className="sticky top-0 flex h-screen flex-col items-center justify-center gap-3 px-5 pt-16 md:px-8">
+        <div className="sticky top-0 flex h-screen flex-col items-center justify-center gap-2.5 px-5 pt-16 md:px-8">
           <StepTrack tour={tour} progress={progress} />
           <motion.div
             className="mx-auto w-full max-w-[1320px]"
@@ -72,7 +75,7 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.3, ease: EASE }}
           >
-            <HeroScene progress={progress} maxHeight={viewport - 170} />
+            <HeroScene progress={progress} maxHeight={viewport - 150} />
           </motion.div>
         </div>
       </div>
@@ -95,7 +98,7 @@ function StepTrack({ tour, progress }: { tour: React.RefObject<HTMLDivElement | 
   };
 
   return (
-    <nav aria-label="Tour steps" className="plate-1 corner-squircle relative z-30 flex shrink-0 items-center gap-1.5 rounded-[22px] p-1.5">
+    <nav aria-label="Tour steps" className="plate-1 corner-squircle relative z-30 flex shrink-0 items-center gap-0.5 rounded-[16px] p-1">
       {NOTES.map((note, i) => {
         const active = i === current;
         return (
@@ -107,11 +110,11 @@ function StepTrack({ tour, progress }: { tour: React.RefObject<HTMLDivElement | 
             aria-current={active ? "step" : undefined}
             title={note.title}
             className={cn(
-              "corner-squircle flex size-9 items-center justify-center rounded-[14px] text-[13px] font-semibold tabular-nums transition-all duration-200 md:size-10",
+              "corner-squircle flex h-7 items-center justify-center rounded-[12px] px-2.5 text-[12px] font-medium transition-all duration-200 md:px-3.5",
               active ? "text-sidebar-primary shadow-pressed" : "text-muted-foreground hover:plate-2 hover:text-foreground",
             )}
           >
-            {i + 1}
+            {STEP_LABELS[i]}
           </button>
         );
       })}
