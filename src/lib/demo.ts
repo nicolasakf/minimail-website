@@ -83,6 +83,7 @@ export const B = {
   lucerne: brand("Lucerne Weekly", "#c2552f", "lucerne"),
   relecloud: brand("Relecloud", "#2a8fb5", "relecloud"),
   humongous: brand("Humongous Insurance", "#6b4fc4", "humongous"),
+  proseBilling: brand("Proseware Billing", "#2f8f6a", "prosewarebilling"),
 };
 
 export const P = {

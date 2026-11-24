@@ -23,8 +23,11 @@ export function MinimumSection() {
         <Title>Your mail sorts itself.</Title>
         <Lead className="mx-auto mt-5 max-w-[620px]">
           Receipts, newsletters and notifications each fold into their own card the moment they arrive. Mail from people stays in
-          your list.
+          your focused list.
         </Lead>
+        <p className="mx-auto mt-4 max-w-[520px] text-sm text-muted-foreground">
+          You're still in control: you can fix a category yourself at any time, just drag a message to another card.
+        </p>
       </div>
       <Reveal className="mt-14">
         <SortingScene />

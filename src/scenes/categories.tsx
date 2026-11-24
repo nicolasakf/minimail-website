@@ -81,9 +81,6 @@ function Editor({ description, typing, saved }: { description: string; typing: b
             {description}
             {typing && <span className="ml-px inline-block h-[15px] w-[1.5px] translate-y-[3px] animate-pulse bg-foreground" />}
           </div>
-          <span className="grain absolute -bottom-3 right-6 rounded-full bg-sidebar-primary px-3 py-1 text-[12px] font-semibold text-sidebar-primary-foreground shadow-raise-2">
-            Write it in your own words
-          </span>
         </div>
         {CATEGORIES.slice(4, 6).map((category) => (
           <EditorRow key={category.id} category={category} />

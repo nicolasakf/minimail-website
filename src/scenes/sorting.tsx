@@ -8,6 +8,7 @@ import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/rea
 import { cn } from "@/lib/utils";
 import { B, CATEGORIES, CHIPS, P, YESTERDAY, type CategoryId, type Chip, type Row } from "~/lib/demo";
 import { EASE } from "~/lib/motion";
+import { Cursor } from "~/parts/cursor";
 import { Avatar, CardHead, CardPlate, ChipLine, ListGroupHeading, ThreadRow } from "~/parts/mail";
 import { Stage, stageRect, useStage } from "~/parts/stage";
 import { AppWindow, ListHeader } from "~/parts/window";
@@ -19,6 +20,8 @@ const CARDS: CategoryId[] = ["receipts", "newsletters", "notifications"];
 interface Arrival {
   row: Row;
   to: CategoryId | null;
+  /** Filed in the wrong place on purpose: the person drags it to the right card. */
+  fix?: CategoryId;
 }
 
 const ARRIVALS: Arrival[] = [
@@ -38,23 +41,32 @@ const ARRIVALS: Arrival[] = [
     to: "notifications",
     row: { id: "s4", from: B.humongous, subject: "Your policy documents are ready", snippet: "Your renewed home policy is ready to view.", unread: true, account: "uni", time: "9:55" },
   },
+  {
+    to: "notifications",
+    fix: "receipts",
+    row: { id: "s5", from: B.proseBilling, subject: "Invoice #3302 is ready", snippet: "Your invoice for November is attached.", unread: true, account: "gmail", time: "10:02" },
+  },
 ];
 
-type Phase = { kind: "arrive"; i: number } | { kind: "file"; i: number } | { kind: "hold" } | { kind: "reset" };
+type Phase = { kind: "arrive"; i: number } | { kind: "file"; i: number } | { kind: "grab" } | { kind: "drag" } | { kind: "hold" } | { kind: "reset" };
 
 const PHASES: Phase[] = [
   ...ARRIVALS.flatMap((a, i): Phase[] => (a.to ? [{ kind: "arrive", i }, { kind: "file", i }] : [{ kind: "arrive", i }])),
+  { kind: "grab" },
+  { kind: "drag" },
   { kind: "hold" },
   { kind: "reset" },
 ];
-const DURATION: Record<Phase["kind"], number> = { arrive: 1500, file: 1400, hold: 2800, reset: 800 };
+const DURATION: Record<Phase["kind"], number> = { arrive: 1500, file: 1400, grab: 1700, drag: 1500, hold: 2800, reset: 800 };
+const FIXED_ID = "s5";
 
 /** The finished picture, for reduced motion. */
 function finalState() {
   const added: Partial<Record<CategoryId, Chip[]>> = {};
   const list: Row[] = [];
   for (const a of ARRIVALS) {
-    if (a.to) added[a.to] = [{ id: a.row.id, from: a.row.from, unread: true }, ...(added[a.to] ?? [])];
+    const place = a.fix ?? a.to;
+    if (place) added[place] = [{ id: a.row.id, from: a.row.from, unread: true }, ...(added[place] ?? [])];
     else list.unshift(a.row);
   }
   return { added, list };
@@ -72,6 +84,8 @@ interface Flight {
   chip: Chip;
   from: { x: number; y: number };
   to: { x: number; y: number; width: number } | null;
+  /** The person is carrying it with the pointer. */
+  carried?: boolean;
 }
 
 function Inbox() {
@@ -89,6 +103,7 @@ function Inbox() {
   const [fresh, setFresh] = useState<string | null>(null);
   const [lifted, setLifted] = useState<CategoryId | null>(null);
   const [flight, setFlight] = useState<Flight | null>(null);
+  const [pointer, setPointer] = useState<{ x: number; y: number; visible: boolean; pressed: boolean }>({ x: 0, y: 0, visible: false, pressed: false });
 
   useEffect(() => {
     if (reduced || freeze) {
@@ -117,10 +132,30 @@ function Inbox() {
         setAdded((current) => ({ ...current, [to!]: [chip, ...(current[to!] ?? [])] }));
         setList((rows) => rows.filter((r) => r.id !== row.id));
         setFlight({ chip, from: box ? { x: box.x + 32, y: box.y + 6 } : { x: 60, y: 360 }, to: null });
+      } else if (p.kind === "grab") {
+        const box = stageRect(stage, stage.ref.current?.querySelector(`[data-chip-id="${FIXED_ID}"]`) ?? null);
+        const target = box ? { x: box.x + 90, y: box.y + 8 } : { x: 760, y: 150 };
+        setPointer({ x: target.x + 170, y: target.y + 150, visible: true, pressed: false });
+        window.setTimeout(() => setPointer({ x: target.x, y: target.y, visible: true, pressed: false }), 80);
+        window.setTimeout(() => setPointer((c) => ({ ...c, pressed: true })), 1300);
+      } else if (p.kind === "drag") {
+        const arrival = ARRIVALS.find((a) => a.row.id === FIXED_ID)!;
+        const box = stageRect(stage, stage.ref.current?.querySelector(`[data-chip-id="${FIXED_ID}"]`) ?? null);
+        const chip: Chip = { id: FIXED_ID, from: arrival.row.from, unread: true };
+        setPointer((c) => ({ ...c, visible: false }));
+        setLifted(arrival.fix!);
+        setHidden(FIXED_ID);
+        setAdded((current) => ({
+          ...current,
+          notifications: (current.notifications ?? []).filter((c) => c.id !== FIXED_ID),
+          [arrival.fix!]: [chip, ...(current[arrival.fix!] ?? [])],
+        }));
+        setFlight({ chip, from: box ? { x: box.x + 6, y: box.y } : { x: 760, y: 150 }, to: null, carried: true });
       } else if (p.kind === "reset") {
         setFresh(null);
         setList([]);
         setAdded({});
+        setPointer((c) => ({ ...c, visible: false, pressed: false }));
       }
     }
     const timer = window.setTimeout(() => setPhase((n) => (n + 1) % PHASES.length), DURATION[p.kind]);
@@ -176,7 +211,8 @@ function Inbox() {
         </div>
       </AppWindow>
 
-      {flight?.to && <Flyer chip={flight.chip} from={flight.from} to={flight.to} onDone={land} />}
+      {flight?.to && <Flyer chip={flight.chip} from={flight.from} to={flight.to} carried={flight.carried} onDone={land} />}
+      <Cursor x={pointer.x} y={pointer.y} pressed={pointer.pressed} visible={pointer.visible} />
     </div>
   );
 }
@@ -209,8 +245,8 @@ function SortCard({ id, added, hidden, lifted }: { id: CategoryId; added: Chip[]
   );
 }
 
-/** The sender lifting out of the list and landing on its card. */
-function Flyer({ chip, from, to, onDone }: { chip: Chip; from: { x: number; y: number }; to: { x: number; y: number; width: number }; onDone: () => void }) {
+/** The sender lifting out of the list and landing on its card; when `carried`, a pointer holds it all the way. */
+function Flyer({ chip, from, to, carried, onDone }: { chip: Chip; from: { x: number; y: number }; to: { x: number; y: number; width: number }; carried?: boolean; onDone: () => void }) {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   return (
@@ -218,8 +254,8 @@ function Flyer({ chip, from, to, onDone }: { chip: Chip; from: { x: number; y: n
       className="pointer-events-none absolute z-20"
       style={{ left: from.x, top: from.y, width: Math.max(140, to.width) }}
       initial={{ x: 0, y: 0, scale: 1.08 }}
-      animate={{ x: [0, dx * 0.3, dx], y: [0, dy * 0.6 - 24, dy], scale: [1.08, 1.12, 1] }}
-      transition={{ duration: 0.9, ease: EASE, times: [0, 0.45, 1] }}
+      animate={carried ? { x: [0, dx], y: [0, dy], scale: [1.08, 1.08] } : { x: [0, dx * 0.3, dx], y: [0, dy * 0.6 - 24, dy], scale: [1.08, 1.12, 1] }}
+      transition={carried ? { duration: 1.1, ease: EASE } : { duration: 0.9, ease: EASE, times: [0, 0.45, 1] }}
       onAnimationComplete={onDone}
     >
       <div className="plate-2 corner-squircle flex h-7 items-center gap-2 rounded-[10px] px-1.5 text-sm shadow-overlay">
@@ -227,6 +263,11 @@ function Flyer({ chip, from, to, onDone }: { chip: Chip; from: { x: number; y: n
         <span className="min-w-0 flex-1 truncate">{chip.from.name}</span>
         <span className="size-1.5 shrink-0 rounded-full bg-unread" />
       </div>
+      {carried && (
+        <svg width="22" height="24" viewBox="0 0 22 24" className="absolute left-[88px] top-[8px]" style={{ filter: "drop-shadow(1px 2px 2px rgb(72 64 55 / 0.35))" }}>
+          <path d="M2 1.5v18.2l5.1-4.6 3.2 7.3 3.3-1.4-3.2-7.2 6.9-.4L2 1.5Z" fill="#1f1d1a" stroke="#fff" strokeWidth="1.4" strokeLinejoin="round" />
+        </svg>
+      )}
     </motion.div>
   );
 }
