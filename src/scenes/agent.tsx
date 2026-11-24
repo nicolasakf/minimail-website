@@ -60,7 +60,7 @@ export function AgentSection() {
           <Title>Bring your own AI agent.</Title>
         </div>
         <Lead>
-          MiniMail has no chat assistant built in by design. Claude Code, Codex, Cursor, Gemini CLI or Copilot can work with your mail through the <code className="plate-3 corner-squircle rounded-md px-1.5 py-0.5 font-mono text-[0.85em] text-foreground">minimail</code> CLI, as far as you allow in Settings.
+          MiniMail has no built-in chat assistant by design. Claude Code, Codex, Cursor, or any other AI agent of your choice can work with your mail using the <code className="plate-3 corner-squircle rounded-md px-1.5 py-0.5 font-mono text-[0.85em] text-foreground">minimail</code> CLI.
           What can't be undone asks you first.
         </Lead>
       </div>
