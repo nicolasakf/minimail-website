@@ -1,5 +1,6 @@
 import { Groove, Nav } from "~/parts/site";
 import { AgentSection } from "~/scenes/agent";
+import { BloatSection } from "~/scenes/bloat";
 import { CategoriesSection } from "~/scenes/categories";
 import { AccountsSection, ClosingSection } from "~/scenes/closing";
 import { HeroSection } from "~/scenes/hero-section";
@@ -14,6 +15,7 @@ export function App() {
         <HeroSection />
         <Groove />
         <ProblemsSection />
+        <BloatSection />
         <MinimumSection />
         <CategoriesSection />
         <RulesSection />
