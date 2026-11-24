@@ -34,7 +34,6 @@ export function CategoriesSection() {
             Add, rename or remove categories, and write what belongs in each one in plain words, exceptions included. AI files
             your mail by what you wrote.
           </Lead>
-          <p className="mt-6 text-sm text-muted-foreground">AI sorting needs your own key. Without one, mail is still sorted by simple rules.</p>
         </div>
         <Reveal>
           <Stage width={W} height={H}>
