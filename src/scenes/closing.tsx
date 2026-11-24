@@ -1,7 +1,7 @@
 /** Privacy and security, then the accounts that can be connected, the last call to download, and the footer. */
 import { useRef, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Cloud, ImageOff, Laptop, Lock, LockOpen, Server } from "lucide-react";
+import { ArrowUpRight, Cloud, ImageOff, Laptop, Lock, LockOpen, Server } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { EASE, useLoop } from "~/lib/motion";
@@ -149,6 +149,7 @@ const ACCOUNTS = [
     mark: <AccountMark account="gmail" size={34} />,
     name: "Gmail and Google Workspace",
     text: "Add it with an app password today. We're working on making Google sign-in (OAuth) work out of the box.",
+    link: { href: "https://support.google.com/accounts/answer/185833", label: "Read more about app passwords" },
   },
   {
     mark: (
@@ -194,6 +195,17 @@ export function AccountsSection() {
             <span className="plate-2 corner-squircle flex h-16 w-fit min-w-16 items-center justify-center rounded-[18px] px-4">{account.mark}</span>
             <h3 className="mt-5 text-lg font-bold">{account.name}</h3>
             <p className="mt-1 text-[15px] leading-snug text-muted-foreground">{account.text}</p>
+            {"link" in account && account.link && (
+              <a
+                href={account.link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex w-fit items-center gap-1 text-[14px] font-medium text-sidebar-primary underline-offset-4 hover:underline"
+              >
+                {account.link.label}
+                <ArrowUpRight className="size-3.5" />
+              </a>
+            )}
           </Reveal>
         ))}
       </div>
