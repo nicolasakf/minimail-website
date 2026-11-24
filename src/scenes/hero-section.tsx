@@ -18,7 +18,7 @@ export function HeroSection() {
         <motion.img
           src="/app-icon.png"
           alt="MiniMail"
-          className="size-24 md:size-28"
+          className="size-28 md:size-36"
           initial={{ opacity: 0, y: 16, scale: 0.92 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, ease: EASE }}
@@ -37,7 +37,7 @@ export function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.16, ease: EASE }}
         >
-          A desktop email client built on one question: how simple can we make it?
+          Everything email needs. Nothing it doesn't.
         </motion.p>
         <motion.div
           className="mt-9 flex flex-wrap items-center justify-center gap-3"
