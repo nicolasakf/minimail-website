@@ -72,9 +72,12 @@ export function HeroScene({ progress, maxHeight }: { progress: MotionValue<numbe
   );
 }
 
-function noteFor(value: number): number {
-  // The window alone, then one note per stretch, then the window alone again, sharp.
-  const index = Math.floor(value * (NOTES.length + 2)) - 1;
+/** The tour is cut into equal stretches: the window alone, one per note, then the window alone again, sharp. */
+export const TOUR_STRETCHES = NOTES.length + 2;
+
+/** The note shown at a scroll `value` (0 to 1), or -1 for none. */
+export function noteFor(value: number): number {
+  const index = Math.floor(value * TOUR_STRETCHES) - 1;
   return index >= NOTES.length ? -1 : Math.max(-1, index);
 }
 

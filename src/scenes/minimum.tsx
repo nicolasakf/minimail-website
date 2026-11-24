@@ -43,8 +43,7 @@ export function RulesSection() {
       <div className="mx-auto max-w-[760px] text-center">
         <Title>You decide what gets through.</Title>
         <Lead className="mx-auto mt-5 max-w-[620px]">
-          Mark a sender as priority, mute one you don't need to hear from, or block one for good. Each works on an address or a
-          whole domain.
+          Mark a sender or domain as priority, mute one you don't need to hear from, or block one for good.
         </Lead>
       </div>
       <Reveal className="mt-14">
@@ -86,7 +85,7 @@ interface Rule {
 
 const RULES: Rule[] = [
   { id: "priority", label: "Priority", icon: Zap, tone: "text-amber", who: B.northwindMarket, subject: "Your refund was approved" },
-  { id: "mute", label: "Muted", icon: BellOff, tone: "text-muted-foreground", who: B.litware, subject: "Weekly activity summary" },
+  { id: "mute", label: "Muted", icon: BellOff, tone: "text-purple", who: B.litware, subject: "Weekly activity summary" },
   { id: "block", label: "Blocked", icon: ShieldBan, tone: "text-destructive", who: B.wingtip, subject: "LAST CHANCE: 70% off" },
 ];
 
@@ -147,7 +146,7 @@ function RuleColumn({ rule, step, delay }: { rule: Rule; step: number; delay: nu
               transition={{ duration: 0.45, delay: delay + 0.2 }}
               className="corner-squircle flex h-full items-center justify-center gap-2 rounded-[16px] border-2 border-dashed border-foreground/15 text-[13px] font-medium text-muted-foreground"
             >
-              <BellOff className="size-4" /> No notification
+              <BellOff className="size-4 text-purple" /> No notification
             </motion.div>
           )}
           {outcome && rule.id === "block" && (
@@ -190,7 +189,7 @@ function RuleColumn({ rule, step, delay }: { rule: Rule; step: number; delay: nu
             <AnimatePresence initial={false}>
               {arrived && (
                 <motion.div key="new" initial={{ height: 0, opacity: 0 }} animate={{ height: 40, opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.4, delay, ease: EASE }}>
-                  <MiniRow from={rule.who} subject={rule.subject} unread icon={<BellOff className="size-3.5 shrink-0 text-muted-foreground" />} />
+                  <MiniRow from={rule.who} subject={rule.subject} unread icon={<BellOff className="size-3.5 shrink-0 text-purple" />} />
                 </motion.div>
               )}
             </AnimatePresence>
