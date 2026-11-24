@@ -269,8 +269,7 @@ export function BloatSection() {
             Sorting is all you need.
           </motion.h3>
           <Lead className="mt-6">
-            Once your mail is sorted the right way, what matters becomes clear. That's what comes next: categories that sort
-            themselves, categories you define, and rules to block, mute or prioritize.
+            Once your mail is sorted the right way, what matters becomes clear, and everything falls into place.
           </Lead>
         </div>
         <Reveal>
