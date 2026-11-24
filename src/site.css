@@ -1,0 +1,32 @@
+@import "./minimail/styles/globals.css";
+
+/* The app's window never scrolls; the site does. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  overflow-x: hidden;
+}
+
+::selection {
+  background: hsl(var(--sidebar-primary) / 0.22);
+}
+
+/* A note laid over a dark demo: the Light plastic, written out since the theme's tokens there are Dark. */
+.light-plate {
+  background-color: hsl(38 28% 90.2%);
+  background-image: url("./minimail/assets/grain-light.png");
+  background-size: var(--grain-size);
+  color: hsl(32 10% 19%);
+  box-shadow:
+    2.83px 2.83px 3px rgb(72 64 55 / 0.28),
+    inset 0.71px 0.71px 0 rgb(255 255 255 / 0.9),
+    0 16px 36px rgb(0 0 0 / 0.35);
+}

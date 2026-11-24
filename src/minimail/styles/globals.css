@@ -1,0 +1,545 @@
+@import "@fontsource/saira/400.css";
+@import "@fontsource/saira/500.css";
+@import "@fontsource/saira/600.css";
+@import "@fontsource/saira/700.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* (the app's fixed window rule is left out on the site) */
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Reasonable radius when `corner-shape: squircle` is unsupported */
+  .corner-squircle {
+    border-radius: 0.5rem;
+  }
+
+  /* Electron frameless window: drag by the title area, never by controls inside it. */
+  .electron-window-drag {
+    -webkit-app-region: drag;
+  }
+
+  .electron-no-drag {
+    -webkit-app-region: no-drag;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/*
+ * Native squircle (same approach as Orion): must stay OUTSIDE @layer utilities so
+ * it overrides Tailwind rounded-*. Needs both corner-shape and border-radius.
+ */
+@supports (corner-shape: squircle) {
+  .corner-squircle {
+    corner-shape: squircle;
+    border-radius: 1.8rem;
+  }
+}
+
+/*
+ * The toast itself: the `group-[.toaster]:rounded-2xl` on it out-ranks `.corner-squircle` (and so does
+ * Sonner's own radius), which left it with a plain 16px corner. Same fix as the buttons below.
+ */
+.toaster [data-sonner-toast][data-styled='true'] {
+  border-radius: 1rem;
+}
+
+@supports (corner-shape: squircle) {
+  .toaster [data-sonner-toast][data-styled='true'] {
+    corner-shape: squircle;
+    border-radius: 1.8rem;
+  }
+}
+
+/*
+ * Sonner styles its action/cancel buttons with `[data-sonner-toast][data-styled='true']
+ * [data-button] { border-radius: 4px }`, which out-ranks `.corner-squircle`. Match it
+ * with one more class so toast buttons get the same squircle as every other button.
+ */
+.toaster [data-sonner-toast][data-styled='true'] [data-button] {
+  border-radius: 0.5rem;
+}
+
+@supports (corner-shape: squircle) {
+  .toaster [data-sonner-toast][data-styled='true'] [data-button] {
+    corner-shape: squircle;
+    border-radius: 1.8rem;
+  }
+}
+
+/*
+ * The look is matte plastic, injection molded: the window is one light-colored panel and every part sits on
+ * it as a raised plate lit from the top left (the light is fixed at 315°). Raised is the default. A part
+ * inside a part is one level higher in a series of three: level 1 sits on the panel (a sidebar, a list, a
+ * card, a field), level 2 on a level-1 plate (a selected row, a button in a toolbar, a switch), level 3 on a
+ * level-2 plate (a switch's thumb, a badge, a chip). Pressed is the inset of a key held or latched down.
+ * The edges "float": a cast shadow and a crisp lit edge. Light and Dark are the same plastic in two tones.
+ *
+ * Colors are HSL triples, as everywhere here. `--background` is the plastic itself; the shadow and highlight
+ * tones are its own hue, darker and lighter (`--shade-rgb`, `--lite-rgb`). `--sa` and `--la` scale shadow and
+ * highlight strength: dark plastic needs more shadow and less highlight to read the same.
+ */
+@layer base {
+  :root {
+    --font-sans: "Saira", ui-sans-serif, system-ui, sans-serif;
+    color-scheme: light;
+
+    --background: 38 28% 90.2%;
+    --foreground: 32 10% 19%;
+    --card: 38 11% 90.2%;
+    --card-foreground: 32 10% 19%;
+    --popover: 38 11% 90.2%;
+    --popover-foreground: 32 10% 19%;
+    --primary: 32 10% 19%;
+    --primary-foreground: 38 11% 90.2%;
+    /* Fills for parts that are not raised (chips, code, hover): the plastic a little darker. */
+    --secondary: 38 11% 86%;
+    --secondary-foreground: 32 10% 19%;
+    --muted: 38 11% 86%;
+    --muted-foreground: 32 6% 37%;
+    --accent: 38 11% 83.5%;
+    --accent-foreground: 32 10% 19%;
+    --destructive: 3.6 53% 50.8%;
+    --destructive-foreground: 0 0% 100%;
+    /* Fine lines (parting grooves, separators): the shadow tone of the plastic. */
+    --border: 38 11% 76%;
+    --input: 38 11% 76%;
+    --ring: 218 100% 62%;
+    --radius: 0.5rem;
+    --sidebar-background: 38 11% 90.2%;
+    --sidebar-foreground: 32 10% 19%;
+    /* The highlight color (second-shot insert): selection, unread marks, links. Settings can replace it. */
+    --sidebar-primary: 218.8 61.5% 52.2%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 38 11% 83.5%;
+    --sidebar-accent-foreground: 32 10% 19%;
+    --sidebar-border: 38 11% 76%;
+    /* The brighter blue of the keyboard focus glow. */
+    --sidebar-ring: 218 100% 62%;
+    --chart-1: 12 76% 55%;
+    --chart-2: 173 58% 36%;
+    --chart-3: 197 37% 30%;
+    --chart-4: 43 74% 52%;
+    --chart-5: 27 87% 56%;
+    /* Unread mail in Dashboard charts: amber, stepped for each surface. */
+    --chart-unread: 33.4 73.2% 38%;
+    /* MiniMail-only: unread dot / count accents. */
+    --unread: 218.8 61.5% 52.2%;
+
+    /* Plastic tones. */
+    --shade-rgb: 72 64 55;
+    --lite-rgb: 255 255 255;
+    --sa: 1;
+    --la: 1;
+    --face-hover: color-mix(in srgb, hsl(var(--background)) 93%, #000);
+    /* A softer version for big cards, so the rows inside them still stand out when hovered. */
+    --face-hover-soft: color-mix(in srgb, hsl(var(--background)) 97%, #000);
+    /* Amber and green for warnings and success, tuned for each plastic. */
+    --amber: 33.4 73.2% 38%;
+    --purple: 271 81% 56%;
+    --success: 152 55% 30%;
+    /* Sender tiles: the plastic tinted with a hue (saturation, lightness) and its printed ink (lightness). */
+    --tile-s: 42%;
+    --tile-l: 70%;
+    --tile-ink: 20%;
+    /* The way shadows fall (unit vector), from the light at 315°; the light source's place on the panel. */
+    --lx: 0.707;
+    --ly: 0.707;
+    --src-x: 11.1%;
+    --src-y: 11.1%;
+
+    /* Raised, floating edges: depth 4px, softness 2.5px, each level a step lower than the one below. */
+    --raise-1: 2.83px 2.83px 3px rgb(var(--shade-rgb) / calc(.28 * var(--sa))), 0.85px 0.85px 1px rgb(var(--shade-rgb) / calc(.24 * var(--sa))), inset 0.71px 0.71px 0 rgb(var(--lite-rgb) / calc(.9 * var(--la))), inset -0.85px -0.85px 2px rgb(var(--shade-rgb) / calc(.14 * var(--sa)));
+    --raise-2: 1.98px 1.98px 2.1px rgb(var(--shade-rgb) / calc(.28 * var(--sa))), 0.59px 0.59px 1px rgb(var(--shade-rgb) / calc(.24 * var(--sa))), inset 0.71px 0.71px 0 rgb(var(--lite-rgb) / calc(.9 * var(--la))), inset -0.85px -0.85px 2px rgb(var(--shade-rgb) / calc(.14 * var(--sa)));
+    --raise-3: 1.41px 1.41px 1.5px rgb(var(--shade-rgb) / calc(.28 * var(--sa))), 0.42px 0.42px 1px rgb(var(--shade-rgb) / calc(.24 * var(--sa))), inset 0.71px 0.71px 0 rgb(var(--lite-rgb) / calc(.9 * var(--la))), inset -0.85px -0.85px 2px rgb(var(--shade-rgb) / calc(.14 * var(--sa)));
+    --pressed: inset 0.99px 0.99px 0.88px rgb(var(--shade-rgb) / calc(.42 * var(--sa))), inset -0.59px -0.59px 0.53px rgb(var(--lite-rgb) / calc(.9 * var(--la))), inset 0 0 1.22px rgb(var(--shade-rgb) / calc(.12 * var(--sa)));
+    /* A well cut into the panel (the field a slider runs in). */
+    --stamped: inset 2.83px 2.83px 2.5px rgb(var(--shade-rgb) / calc(.42 * var(--sa))), inset -1.7px -1.7px 1.5px rgb(var(--lite-rgb) / calc(.9 * var(--la))), inset 0 0 3.5px rgb(var(--shade-rgb) / calc(.12 * var(--sa)));
+    /* Keyboard focus: a soft glow behind the part, never over its text. */
+    --glow: 0 0 4px hsl(var(--sidebar-ring) / .8), 0 0 14px hsl(var(--sidebar-ring) / .55);
+    /* What floats above the panel (menus, dialogs): level 1 and a long soft shadow. */
+    --overlay: var(--raise-1), 0 16px 36px rgb(var(--shade-rgb) / calc(.2 * var(--sa)));
+    --grain-size: 230px;
+  }
+
+  .dark {
+    color-scheme: dark;
+
+    --background: 213.3 5.9% 20%;
+    --foreground: 240 2.4% 92%;
+    --card: 213.3 5.9% 21%;
+    --card-foreground: 240 2.4% 92%;
+    --popover: 213.3 5.9% 21%;
+    --popover-foreground: 240 2.4% 92%;
+    --primary: 240 2.4% 92%;
+    --primary-foreground: 213.3 5.9% 21%;
+    --secondary: 213.3 5.9% 25%;
+    --secondary-foreground: 240 2.4% 92%;
+    --muted: 213.3 5.9% 25%;
+    --muted-foreground: 220 2% 70%;
+    --accent: 213.3 5.9% 28.5%;
+    --accent-foreground: 240 2.4% 92%;
+    --destructive: 4 68.2% 65.5%;
+    --destructive-foreground: 8 38% 12%;
+    --border: 213 6% 22%;
+    --input: 213 6% 22%;
+    --ring: 216.4 100% 77.1%;
+    --sidebar-background: 213.3 5.9% 21%;
+    --sidebar-foreground: 240 2.4% 92%;
+    --sidebar-primary: 219 82.2% 71.4%;
+    --sidebar-primary-foreground: 220 54.5% 12.9%;
+    --sidebar-accent: 213.3 5.9% 28.5%;
+    --sidebar-accent-foreground: 240 2.4% 92%;
+    --sidebar-border: 213 6% 22%;
+    --sidebar-ring: 216.4 100% 77.1%;
+    --chart-1: 220 70% 62%;
+    --chart-2: 160 60% 52%;
+    --chart-3: 30 80% 60%;
+    --chart-4: 280 65% 68%;
+    --chart-5: 340 75% 62%;
+    --chart-unread: 38.8 74.5% 56.9%;
+    --unread: 219 82.2% 71.4%;
+
+    --shade-rgb: 22 23 24;
+    --lite-rgb: 218 219 221;
+    --sa: 1.5;
+    --la: 0.3;
+    --face-hover: color-mix(in srgb, hsl(var(--background)) 89%, #fff);
+    --face-hover-soft: color-mix(in srgb, hsl(var(--background)) 95%, #fff);
+    --amber: 38.8 74.5% 56.9%;
+    --purple: 270 95% 75%;
+    --success: 152 45% 58%;
+    --tile-s: 30%;
+    --tile-l: 38%;
+    --tile-ink: 92%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    background-image: url("../assets/grain-light.png");
+    background-size: var(--grain-size);
+  }
+
+  .dark body {
+    background-image: url("../assets/grain-dark.png");
+  }
+
+  /* The grain is drawn at 384px for a 1x screen; on a 2x screen it is laid at half the size, so it stays fine. */
+  @media (min-resolution: 2dppx) {
+    :root {
+      --grain-size: 115px;
+    }
+  }
+
+  /* A soft falloff from the light across the whole panel. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(
+      130% 100% at var(--src-x) var(--src-y),
+      rgb(var(--lite-rgb) / calc(0.34 * var(--la))),
+      rgb(var(--lite-rgb) / 0) 55%,
+      rgb(var(--shade-rgb) / calc(0.07 * var(--sa))) 100%
+    );
+  }
+
+  /*
+   * Keyboard focus is a soft glow behind the part, never a ring and never over its text. Solid parts glow along
+   * their silhouette; parts with no fill of their own add the glow to their box shadow (`shadow-*-glow`).
+   */
+  :focus-visible {
+    outline: none;
+    --tw-ring-shadow: 0 0 #0000 !important;
+    --tw-ring-offset-shadow: 0 0 #0000 !important;
+  }
+
+  :where(button, a[href], summary, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], [role="switch"], [role="menuitem"]):not([class*="-glow"]):focus-visible {
+    filter: drop-shadow(0 0 4px hsl(var(--sidebar-ring) / 0.8)) drop-shadow(0 0 14px hsl(var(--sidebar-ring) / 0.55));
+  }
+}
+
+@layer components {
+  /* The plastic itself: the panel's color with the mold grain over it (`.grain` is the grain alone, for parts with a color of their own). */
+  .grain,
+  .plastic,
+  .plate-1,
+  .plate-2,
+  .plate-3,
+  .plate-pressed {
+    background-image: url("../assets/grain-light.png");
+    background-size: var(--grain-size);
+  }
+
+  .dark .grain,
+  .dark .plastic,
+  .dark .plate-1,
+  .dark .plate-2,
+  .dark .plate-3,
+  .dark .plate-pressed {
+    background-image: url("../assets/grain-dark.png");
+  }
+
+  .plastic,
+  .plate-1,
+  .plate-2,
+  .plate-3,
+  .plate-pressed {
+    background-color: hsl(var(--background));
+  }
+
+  /* Raised in three steps (see the note at the top), and the pressed inset. */
+  .plate-1 {
+    box-shadow: var(--raise-1);
+  }
+
+  .plate-2 {
+    box-shadow: var(--raise-2);
+  }
+
+  .plate-3 {
+    box-shadow: var(--raise-3);
+  }
+
+  .plate-pressed {
+    box-shadow: var(--pressed);
+  }
+
+  /* A fine groove in the panel: a lit line over a shaded one, along the way the light falls. */
+  .groove-h {
+    height: 2px;
+    box-shadow:
+      inset 0 calc(var(--ly) * 1.2px) 0 rgb(var(--lite-rgb) / calc(0.85 * var(--la))),
+      inset 0 calc(var(--ly) * -1.2px) 0 rgb(var(--shade-rgb) / calc(0.18 * var(--sa)));
+  }
+
+  /*
+   * A selected row is shaded in the highlight color (an opaque color, so rows can overlap without a seam). A run of
+   * adjacent selected rows is raised as one block: each row draws the raise only along the block's outer edges, and a
+   * row that continues into the next one extends one pixel under it, so no hairline shows between them
+   * (`run-top`: first row, `run-mid`, `run-bottom`: last row).
+   */
+  .sel-tint {
+    --sel-tint: color-mix(in srgb, hsl(var(--sidebar-primary)) 12%, hsl(var(--background)));
+    background-color: var(--sel-tint);
+  }
+
+  .dark .sel-tint {
+    --sel-tint: color-mix(in srgb, hsl(var(--sidebar-primary)) 25%, hsl(var(--background)));
+  }
+
+  .run-top,
+  .run-mid,
+  .run-bottom {
+    box-shadow:
+      2.83px 2.83px 3px rgb(var(--shade-rgb) / calc(0.28 * var(--sa))),
+      0.85px 0.85px 1px rgb(var(--shade-rgb) / calc(0.24 * var(--sa))),
+      inset 0.71px 0 0 rgb(var(--lite-rgb) / calc(0.9 * var(--la))),
+      inset -0.85px 0 2px rgb(var(--shade-rgb) / calc(0.14 * var(--sa)));
+  }
+
+  /* The part of the row that reaches under the next one, in the same color and grain. */
+  .run-top::after,
+  .run-mid::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    height: 1px;
+    background: inherit;
+    pointer-events: none;
+  }
+
+  .run-top {
+    box-shadow:
+      2.83px 2.83px 3px rgb(var(--shade-rgb) / calc(0.28 * var(--sa))),
+      0.85px 0.85px 1px rgb(var(--shade-rgb) / calc(0.24 * var(--sa))),
+      inset 0.71px 0.71px 0 rgb(var(--lite-rgb) / calc(0.9 * var(--la))),
+      inset -0.85px 0 2px rgb(var(--shade-rgb) / calc(0.14 * var(--sa)));
+  }
+
+  .run-bottom {
+    box-shadow:
+      2.83px 2.83px 3px rgb(var(--shade-rgb) / calc(0.28 * var(--sa))),
+      0.85px 0.85px 1px rgb(var(--shade-rgb) / calc(0.24 * var(--sa))),
+      inset 0.71px 0 0 rgb(var(--lite-rgb) / calc(0.9 * var(--la))),
+      inset -0.85px -0.85px 2px rgb(var(--shade-rgb) / calc(0.14 * var(--sa)));
+  }
+
+  /* A divider along an edge of a part: a line of shade with a line of light beside it. */
+  .edge-t {
+    box-shadow:
+      inset 0 1px 0 rgb(var(--shade-rgb) / calc(0.22 * var(--sa))),
+      inset 0 2px 0 rgb(var(--lite-rgb) / calc(0.85 * var(--la)));
+  }
+
+  .edge-b {
+    box-shadow:
+      inset 0 -1px 0 rgb(var(--lite-rgb) / calc(0.85 * var(--la))),
+      inset 0 -2px 0 rgb(var(--shade-rgb) / calc(0.22 * var(--sa)));
+  }
+
+  .groove-v {
+    width: 2px;
+    box-shadow:
+      inset calc(var(--lx) * 1.3px) 0 0 rgb(var(--lite-rgb) / calc(0.9 * var(--la))),
+      inset calc(var(--lx) * -1.3px) 0 0 rgb(var(--shade-rgb) / calc(0.22 * var(--sa)));
+  }
+}
+
+@layer utilities {
+  /* A held key sinks a little toward the way shadows fall. */
+  .press-sink:active:not(:disabled) {
+    box-shadow: var(--pressed);
+    transform: translate(calc(var(--lx) * 0.6px), calc(var(--ly) * 0.6px));
+  }
+
+  /* Hovering a key changes its face a little: darker on light plastic, lighter on dark plastic. */
+  @media (hover: hover) {
+    .face-hover:hover:not(:disabled) {
+      background-color: var(--face-hover);
+    }
+  }
+}
+
+.mail-editor {
+  min-height: 200px;
+  padding: .85rem 1.25rem 1rem;
+  outline: none;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.mail-editor-compact { min-height: 120px; }
+.mail-editor[data-empty="true"]::before {
+  content: attr(data-placeholder);
+  color: hsl(var(--muted-foreground));
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+/* A suggestion is on show after the cursor: it takes the placeholder's place, and is never selectable. */
+.mail-editor[data-empty="true"]:has(.mail-ghost)::before { display: none; }
+/* ProseMirror gives every non-editable widget `white-space: normal`; the selector is as specific as it needs to be to keep line breaks. */
+.mail-editor .mail-ghost[contenteditable="false"] {
+  color: hsl(var(--muted-foreground));
+  opacity: .75;
+  white-space: pre-wrap;
+  pointer-events: none;
+  user-select: none;
+}
+.mail-editor p { min-height: 1.5em; }
+.mail-editor h1 { font-size: 1.65em; font-weight: 700; margin: .35em 0; }
+.mail-editor h2 { font-size: 1.3em; font-weight: 600; margin: .3em 0; }
+.mail-editor ul, .mail-editor ol { padding-left: 1.7em; }
+.mail-editor ul { list-style: disc; }
+.mail-editor ol { list-style: decimal; }
+.mail-editor a { color: hsl(var(--primary)); text-decoration: underline; cursor: text; }
+.mail-editor blockquote { border-left: 2px solid hsl(var(--border)); padding-left: .85em; margin: .4em 0; }
+.mail-editor table { border-collapse: collapse; table-layout: fixed; max-width: 100%; margin: .5em 0; }
+.mail-editor :is(td, th) { min-width: 32px; border: 1px solid hsl(var(--border)); padding: .25em .5em; position: relative; vertical-align: top; }
+.mail-editor th, .mail-editor .selectedCell { background: hsl(var(--muted)); }
+.mail-editor img { max-width: 100%; height: auto; }
+.mail-editor img.ProseMirror-selectednode { outline: 2px solid hsl(var(--ring)); }
+.mail-editor mark { color: #171717; }
+
+/* Matches of the conversation's ⌘F; the message frames get the same look from lib/thread-find.ts. */
+::highlight(find-match) { background-color: #fde68a; color: #1f2328; }
+::highlight(find-current) { background-color: #fb923c; color: #1f2328; }
+
+.mail-format-docked { position: sticky; top: 0; z-index: 1; padding: .35rem .75rem; background: hsl(var(--background)); }
+.mail-format-bar {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  width: max-content;
+  max-width: min(610px, calc(100vw - 48px));
+  align-items: center;
+  gap: 2px;
+  padding: .3rem;
+  border-radius: 14px;
+  background-color: hsl(var(--popover));
+  background-image: url("../assets/grain-light.png");
+  background-size: var(--grain-size);
+  color: hsl(var(--popover-foreground));
+  box-shadow: var(--overlay);
+  font-size: 12px;
+}
+.dark .mail-format-bar, .dark .mail-format-panel { background-image: url("../assets/grain-dark.png"); }
+.mail-format-docked .mail-format-bar { box-shadow: var(--raise-1); }
+/* A toolbar shown in place, in the composer's footer or the signature editor: flat and full width. */
+.mail-format-host .mail-format-bar {
+  width: 100%;
+  max-width: 100%;
+  padding: .3rem .75rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  background-image: none;
+  box-shadow: none;
+}
+/* Along the bottom of the composer its menus open upward. */
+.mail-format-host.mail-format-up .mail-format-panel { top: auto; bottom: calc(100% + .45rem); }
+.mail-format-tool {
+  display: inline-flex;
+  height: 28px;
+  min-width: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 5px;
+  border-radius: 9px;
+}
+.mail-format-tool svg { width: 15px; height: 15px; }
+.mail-format-tool[aria-pressed="true"], .mail-format-tool[aria-expanded="true"] {
+  box-shadow: var(--pressed);
+  color: hsl(var(--sidebar-primary));
+}
+.mail-format-tool:hover, .mail-format-option:hover { background: var(--face-hover); }
+.mail-format-tool:hover svg { color: hsl(var(--sidebar-primary)); }
+.mail-format-panel {
+  position: absolute;
+  z-index: 2;
+  top: calc(100% + .45rem);
+  left: 0;
+  min-width: 100px;
+  max-height: min(260px, 45dvh);
+  overflow: auto;
+  padding: .25rem;
+  border-radius: 14px;
+  background-color: hsl(var(--popover));
+  background-image: url("../assets/grain-light.png");
+  background-size: var(--grain-size);
+  box-shadow: var(--overlay);
+}
+.mail-format-bar > div:nth-last-of-type(-n+4) .mail-format-panel { left: auto; right: 0; }
+.mail-format-option {
+  display: block;
+  width: 100%;
+  padding: .35rem .5rem;
+  border-radius: 8px;
+  text-align: left;
+  white-space: nowrap;
+}
