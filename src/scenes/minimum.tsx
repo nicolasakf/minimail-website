@@ -2,9 +2,9 @@
  * How mail is categorized and filtered: first, new mail being filed into a category card; then (in categories.tsx)
  * the editor where categories are described; then, here again, priority, mute and block deciding who gets through.
  */
-import { useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { BellOff, ShieldBan, Trash2, Zap } from "lucide-react";
+import { BellOff, ListX, ShieldBan, Trash2, Zap } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { B, P, type Sender } from "~/lib/demo";
@@ -75,7 +75,7 @@ const RH = 380;
 const PRIORITY_CARD = { hue: 40, icon: "Zap" as const };
 
 interface Rule {
-  id: "priority" | "mute" | "block";
+  id: "priority" | "mute" | "block" | "unsub";
   label: string;
   icon: typeof Zap;
   tone: string;
@@ -87,14 +87,15 @@ const RULES: Rule[] = [
   { id: "priority", label: "Priority", icon: Zap, tone: "text-amber", who: B.northwindMarket, subject: "Your refund was approved" },
   { id: "mute", label: "Muted", icon: BellOff, tone: "text-purple", who: B.litware, subject: "Weekly activity summary" },
   { id: "block", label: "Blocked", icon: ShieldBan, tone: "text-destructive", who: B.wingtip, subject: "LAST CHANCE: 70% off" },
+  { id: "unsub", label: "Unsubscribe", icon: ListX, tone: "text-foreground", who: B.lucerne, subject: "This week: 12 stories" },
 ];
 
 function Rules() {
   const ref = useRef<HTMLDivElement>(null);
   // the rules, the mail arriving, what happens to it, a pause
-  const { step } = useLoop(ref, [1000, 1100, 3400, 500], 2);
+  const { step } = useLoop(ref, [1000, 1100, 4200, 500], 2);
   return (
-    <div ref={ref} className="absolute inset-0 grid grid-cols-3 gap-6">
+    <div ref={ref} className="absolute inset-0 grid grid-cols-4 gap-5">
       {RULES.map((rule, i) => (
         <RuleColumn key={rule.id} rule={rule} step={step} delay={i * 0.35} />
       ))}
@@ -115,12 +116,15 @@ function RuleColumn({ rule, step, delay }: { rule: Rule; step: number; delay: nu
         </span>
         <div className="min-w-0">
           <div className="text-[15px] font-semibold">{rule.label}</div>
-          <div className="truncate text-[12.5px] text-muted-foreground">{rule.id === "block" ? "promo@" : "@"}{rule.who.email.split("@")[1]}</div>
+          <div className="truncate text-[12.5px] text-muted-foreground">
+            {rule.id === "unsub" ? `${rule.who.name} list` : `${rule.id === "block" ? "promo@" : "@"}${rule.who.email.split("@")[1]}`}
+          </div>
         </div>
       </div>
 
       {/* The notification area, at the top right of the screen. */}
       <div className="mt-5 h-[76px]">
+        {rule.id === "unsub" && <UnsubNotice outcome={outcome} />}
         <AnimatePresence>
           {outcome && rule.id === "priority" && (
             <motion.div
@@ -197,6 +201,19 @@ function RuleColumn({ rule, step, delay }: { rule: Rule; step: number; delay: nu
             <MiniRow from={P.miguel} subject="Staff engineer role" />
           </div>
         )}
+        {rule.id === "unsub" && (
+          <div className="corner-squircle rounded-2xl p-2 shadow-raise-3">
+            <AnimatePresence initial={false}>
+              {arrived && (
+                <motion.div key="new" initial={{ height: 0, opacity: 0 }} animate={{ height: 40, opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.4, delay, ease: EASE }}>
+                  <MiniRow from={rule.who} subject={rule.subject} unread />
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <MiniRow from={rule.who} subject="Last week: 11 stories" />
+            <MiniRow from={P.dana} subject="Photos from Saturday" />
+          </div>
+        )}
         {rule.id === "block" && (
           <div className="relative h-full">
             <AnimatePresence>
@@ -227,5 +244,61 @@ function RuleColumn({ rule, step, delay }: { rule: Rule; step: number; delay: nu
         )}
       </div>
     </div>
+  );
+}
+
+/** Unsubscribing asks first, since it can't be undone; then the list is told to drop the address. */
+function UnsubNotice({ outcome }: { outcome: boolean }) {
+  // 0 asking, 1 the button pressed, 2 done
+  const [stage, setStage] = useState(0);
+  useEffect(() => {
+    setStage(0);
+    if (!outcome) return;
+    const press = window.setTimeout(() => setStage(1), 1700);
+    const done = window.setTimeout(() => setStage(2), 1950);
+    return () => {
+      window.clearTimeout(press);
+      window.clearTimeout(done);
+    };
+  }, [outcome]);
+
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      {outcome && stage < 2 && (
+        <motion.div
+          key="ask"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3, ease: EASE, delay: stage === 0 ? 0.2 : 0 }}
+          className="plate-2 corner-squircle rounded-[16px] p-2.5 shadow-overlay"
+        >
+          <div className="text-[13px] font-semibold leading-tight">Unsubscribe?</div>
+          <div className="mt-1.5 flex items-center gap-2 text-[12.5px] font-medium">
+            <span className="flex h-7 items-center rounded-[9px] px-2.5 text-muted-foreground">Cancel</span>
+            <span
+              className={cn(
+                "grain corner-squircle flex h-7 items-center rounded-[9px] bg-primary px-3 text-primary-foreground transition-all duration-150",
+                stage === 1 ? "shadow-pressed" : "shadow-raise-1",
+              )}
+            >
+              Unsubscribe
+            </span>
+          </div>
+        </motion.div>
+      )}
+      {outcome && stage === 2 && (
+        <motion.div
+          key="done"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.35 }}
+          className="corner-squircle flex h-full items-center justify-center gap-2 rounded-[16px] border-2 border-dashed border-foreground/15 text-[13px] font-medium text-muted-foreground"
+        >
+          <ListX className="size-4" /> No more mail
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
