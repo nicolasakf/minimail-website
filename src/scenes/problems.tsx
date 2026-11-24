@@ -14,7 +14,7 @@ import { Lead, Reveal, Section, Title } from "~/parts/site";
 
 /** A small screen of the app: one plate set into the card. */
 function Screen({ children }: { children: ReactNode }) {
-  return <div className="plate-2 corner-squircle relative h-[230px] overflow-hidden rounded-[20px] p-3 text-foreground">{children}</div>;
+  return <div className="plate-2 corner-squircle relative h-[230px] overflow-hidden rounded-[20px] p-3">{children}</div>;
 }
 
 function Row({ from, title, sub, unread, className }: { from: Sender; title: string; sub?: string; unread?: boolean; className?: string }) {
@@ -202,11 +202,11 @@ export function ProblemsSection() {
       </div>
       <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {PROBLEMS.map((problem, i) => (
-          <Reveal key={problem.title} delay={i * 0.08} className="note-plate corner-squircle flex flex-col rounded-[26px] p-3.5">
+          <Reveal key={problem.title} delay={i * 0.08} className="plate-1 corner-squircle flex flex-col rounded-[26px] p-3.5">
             {problem.scene}
             <div className="px-1.5 pb-1.5 pt-4">
               <h3 className="text-lg font-bold">{problem.title}</h3>
-              <p className="mt-1 text-[15px] leading-snug text-[hsl(36_22%_80%)]">{problem.text}</p>
+              <p className="mt-1 text-[15px] leading-snug text-muted-foreground">{problem.text}</p>
             </div>
           </Reveal>
         ))}
