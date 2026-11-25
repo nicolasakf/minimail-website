@@ -15,6 +15,14 @@ body {
   overflow-x: hidden;
 }
 
+/*
+ * The page behind everything has a much stronger grain than the plates on it.
+ * Made by scripts/generate-page-grain.mjs.
+ */
+body {
+  background-image: url("./assets/grain-page.png");
+}
+
 ::selection {
   background: hsl(var(--sidebar-primary) / 0.22);
 }
