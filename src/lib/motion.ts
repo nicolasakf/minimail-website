@@ -2,17 +2,18 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import { useInView, useReducedMotion } from "motion/react";
 
 /**
- * A scene's clock: steps through `durations` (ms per step) while the scene is on screen, then starts again.
+ * A scene's clock: steps through `durations` (ms per step) while the scene is on screen, then starts again
+ * (with `once`, it stays on the last step instead).
  * Off screen it pauses where it is. With reduced motion it stays on `still` (the scene's finished picture).
  */
-export function useLoop(ref: RefObject<Element | null>, durations: number[], still = durations.length - 1) {
+export function useLoop(ref: RefObject<Element | null>, durations: number[], still = durations.length - 1, once = false) {
   const inView = useInView(ref, { amount: 0.35 });
   const reduced = useReducedMotion();
   const [step, setStep] = useState(0);
   const [cycle, setCycle] = useState(0);
 
   useEffect(() => {
-    if (reduced || !inView) return;
+    if (reduced || !inView || (once && step === durations.length - 1)) return;
     const timer = window.setTimeout(() => {
       setStep((current) => {
         const next = (current + 1) % durations.length;
@@ -21,7 +22,7 @@ export function useLoop(ref: RefObject<Element | null>, durations: number[], sti
       });
     }, durations[step]);
     return () => window.clearTimeout(timer);
-  }, [step, inView, reduced, durations]);
+  }, [step, inView, reduced, durations, once]);
 
   // In development, `?freeze=<step>` holds every scene on one step, for checking a frame.
   const freeze = import.meta.env.DEV ? new URLSearchParams(window.location.search).get("freeze") : null;

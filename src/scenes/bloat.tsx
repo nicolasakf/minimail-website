@@ -76,7 +76,7 @@ const TREE: TreeRow[] = [
 const ROW = 21;
 const ACCOUNT_TONE: Record<string, string> = { E: "bg-[#3b6fd4]", G: "bg-[#c8453b]" };
 
-function OldClient({ grown, cycle }: { grown: boolean; cycle: number }) {
+function OldClient({ grown }: { grown: boolean }) {
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden rounded-[14px] bg-[#f7f5ef] text-[12px] text-[#2b2a27] shadow-raise-2">
       <div className="m-1.5 flex h-6 items-center gap-1.5 rounded-[4px] border border-black/20 bg-white px-2 text-[11px] text-black/50">
@@ -97,9 +97,10 @@ function OldClient({ grown, cycle }: { grown: boolean; cycle: number }) {
           const count = row.count === undefined ? undefined : row.count + (grown ? (row.more ?? 0) : 0);
           return (
             <motion.div
-              key={`${cycle}-${i}`}
+              key={i}
               initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
               transition={{ duration: 0.3, delay: i * 0.035, ease: EASE }}
               className={cn("flex items-center gap-1 whitespace-nowrap", row.selected && "bg-[#cfd6e4]")}
               style={{ height: ROW, paddingLeft: row.depth * 14 }}
@@ -183,10 +184,12 @@ function Places({ items, show, delay, className }: { items: PlaceInfo[]; show: b
   );
 }
 
+/** The old client fills in, its counts and warnings grow, then MiniMail answers. It plays once and stays. */
+const STEPS = [1400, 2600, 1500, 0];
+
 function BloatScene() {
   const ref = useRef<HTMLDivElement>(null);
-  // the old client fills in, its counts and warnings grow, then MiniMail answers, and a hold
-  const { step, cycle } = useLoop(ref, [1400, 2600, 1500, 4600], 3);
+  const { step } = useLoop(ref, STEPS, 3, true);
   const grown = step >= 1;
   const answered = step >= 2;
   return (
@@ -196,7 +199,7 @@ function BloatScene() {
         Traditional email
       </div>
       <motion.div className="absolute left-0 w-[330px]" style={{ top: 34, height: 400 }} initial={false} animate={{ opacity: answered ? 0.4 : 1, scale: answered ? 0.98 : 1 }} transition={{ duration: 0.6, ease: EASE }}>
-        <OldClient grown={grown} cycle={cycle} />
+        <OldClient grown={grown} />
       </motion.div>
       <p className="absolute left-0 w-[330px] text-[17px] text-muted-foreground" style={{ top: 452 }}>
         Folders to build, nest and keep tidy.
@@ -257,7 +260,7 @@ const PHONE_H = 800;
 
 function PhoneBloatScene() {
   const ref = useRef<HTMLDivElement>(null);
-  const { step, cycle } = useLoop(ref, [1400, 2600, 1500, 4600], 3);
+  const { step } = useLoop(ref, STEPS, 3, true);
   const grown = step >= 1;
   const answered = step >= 2;
   return (
@@ -272,7 +275,7 @@ function PhoneBloatScene() {
         animate={{ opacity: answered ? 0.4 : 1, scale: answered ? 0.98 : 1 }}
         transition={{ duration: 0.6, ease: EASE }}
       >
-        <OldClient grown={grown} cycle={cycle} />
+        <OldClient grown={grown} />
       </motion.div>
       <p className="absolute left-0 text-[17px] text-muted-foreground" style={{ top: 368, width: PHONE_W }}>
         Folders to build, nest and keep tidy.
