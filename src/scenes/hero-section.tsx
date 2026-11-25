@@ -64,7 +64,7 @@ export function HeroSection() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          Free and open source · macOS on Apple Silicon · Gmail, Outlook and any IMAP account
+          Free and open source · macOS · Gmail, Outlook and any IMAP account
         </motion.p>
       </div>
 

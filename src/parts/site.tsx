@@ -1,13 +1,14 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion } from "motion/react";
-import { Download } from "lucide-react";
+import { ChevronDown, Download } from "lucide-react";
 
-import { FLAT_KEY } from "@/components/ui/keys";
+import { FLAT_KEY, FLAT_KEY_IN } from "@/components/ui/keys";
 import { cn } from "@/lib/utils";
+import { detectMacArch, type MacArch } from "~/lib/mac-arch";
 import { EASE } from "~/lib/motion";
 
 export const LINKS = {
-  /** Answered by api/download.js: redirects to the newest .dmg, so the download starts at once. */
+  /** Answered by api/download.js: redirects to the newest .dmg (`?arch=x64` for Intel), so the download starts at once. */
   download: "/download",
   github: "https://github.com/nicolasakf/MiniMail",
   guide: "https://github.com/nicolasakf/MiniMail/blob/main/docs/guide.md",
@@ -22,26 +23,97 @@ export function GithubMark({ className }: { className?: string }) {
   );
 }
 
-/** The blue raised insert, like the app's Compose key. */
-export function DownloadButton({ className, size = "lg" }: { className?: string; size?: "lg" | "sm" }) {
+/** Asked once per visit, however many buttons there are. */
+let detected: Promise<MacArch> | undefined;
+
+function useDownloadHref() {
+  const [arch, setArch] = useState<MacArch>("arm64");
+  useEffect(() => {
+    void (detected ??= detectMacArch()).then(setArch);
+  }, []);
+  return arch === "x64" ? `${LINKS.download}?arch=x64` : LINKS.download;
+}
+
+/** The files offered by hand, for a Mac the detection got wrong or a download meant for another one. */
+const CHOICES: { arch: MacArch; label: string }[] = [
+  { arch: "arm64", label: "Apple Silicon" },
+  { arch: "x64", label: "Intel" },
+];
+
+/**
+ * The blue raised insert, like the app's Compose key, split in two: the wide part downloads the file for this Mac,
+ * the arrow lists both. `compact` is the smaller size of the scrolled header.
+ */
+export function DownloadButton({ className, size = "lg", compact = false }: { className?: string; size?: "lg" | "sm"; compact?: boolean }) {
+  const href = useDownloadHref();
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  const arrow = useRef<HTMLButtonElement>(null);
+
+  // The list closes on Escape, and when a click or the focus goes elsewhere.
+  useEffect(() => {
+    if (!open) return;
+    const elsewhere = (event: Event) => {
+      if (!root.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setOpen(false);
+      arrow.current?.focus();
+    };
+    document.addEventListener("pointerdown", elsewhere);
+    document.addEventListener("focusin", elsewhere);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", elsewhere);
+      document.removeEventListener("focusin", elsewhere);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [open]);
+
+  const half = "flex h-full items-center justify-center transition-colors hover:bg-white/10 focus-visible:bg-white/20";
+  const ease = "transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]";
   return (
-    <a
-      href={LINKS.download}
-      className={cn(
-        "grain corner-squircle press-sink inline-flex items-center justify-center gap-2 bg-sidebar-primary font-semibold text-sidebar-primary-foreground shadow-raise-1 transition-[box-shadow,transform,filter] duration-100 hover:brightness-110",
-        size === "lg" ? "h-12 rounded-[14px] px-6 text-[15px]" : "h-9 rounded-[11px] px-4 text-sm",
-        className,
+    <div ref={root} className={cn("relative inline-flex", className)}>
+      <div
+        className={cn(
+          "grain corner-squircle press-sink inline-flex items-stretch overflow-hidden bg-sidebar-primary font-semibold text-sidebar-primary-foreground shadow-raise-1",
+          ease,
+          size === "lg" ? "h-12 rounded-[14px] text-[15px]" : compact ? "h-8 rounded-[10px] text-sm" : "h-9 rounded-[11px] text-sm",
+        )}
+      >
+        <a href={href} className={cn(half, "gap-2", size === "lg" ? "pl-6 pr-5" : "pl-3.5 pr-3")}>
+          <Download className={size === "lg" ? "size-[18px]" : "size-4"} />
+          {size === "sm" ? (
+            <span>
+              Download<span className="hidden sm:inline"> for macOS</span>
+            </span>
+          ) : (
+            "Download for macOS"
+          )}
+        </a>
+        <span aria-hidden className="my-2 w-px bg-black/25 shadow-[1px_0_0_rgb(255_255_255/0.25)]" />
+        <button
+          ref={arrow}
+          type="button"
+          aria-label="Choose the download for your Mac"
+          aria-expanded={open}
+          onClick={() => setOpen((was) => !was)}
+          className={cn(half, size === "lg" ? "w-11" : "w-8")}
+        >
+          <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} />
+        </button>
+      </div>
+      {open && (
+        <div className="plate-1 corner-squircle absolute right-0 top-full z-30 mt-2 flex w-44 flex-col gap-0.5 rounded-[14px] p-1 text-left text-sm font-medium text-foreground">
+          {CHOICES.map(({ arch, label }) => (
+            <a key={arch} href={`${LINKS.download}?arch=${arch}`} onClick={() => setOpen(false)} className={cn("rounded-[10px] px-3 py-2", FLAT_KEY_IN)}>
+              {label}
+            </a>
+          ))}
+        </div>
       )}
-    >
-      <Download className={size === "lg" ? "size-[18px]" : "size-4"} />
-      {size === "sm" ? (
-        <>
-          Download<span className="hidden sm:inline"> for macOS</span>
-        </>
-      ) : (
-        "Download for macOS"
-      )}
-    </a>
+    </div>
   );
 }
 
@@ -75,7 +147,7 @@ export function Nav() {
       {/* At the top: the plate as it was. Scrolled: it shrinks to a small pill of see-through matte plastic. */}
       <nav
         className={cn(
-          "corner-squircle relative mx-auto flex items-center gap-1 overflow-hidden pl-3 pr-2",
+          "corner-squircle relative mx-auto flex items-center gap-1 pl-3 pr-2",
           ease,
           scrolled
             ? "h-11 max-w-[640px] rounded-[16px] bg-background/60 shadow-raise-1 backdrop-blur-xl backdrop-saturate-150"
@@ -83,7 +155,7 @@ export function Nav() {
         )}
       >
         {/* The grain stays on the see-through pill, so it still reads as plastic. */}
-        <span aria-hidden className={cn("grain pointer-events-none absolute inset-0", ease, scrolled ? "opacity-70" : "opacity-0")} />
+        <span aria-hidden className={cn("grain pointer-events-none absolute inset-0 rounded-[inherit] [corner-shape:inherit]", ease, scrolled ? "opacity-70" : "opacity-0")} />
         <a href="#top" className="relative mr-auto flex items-center gap-2.5 pr-3 font-bold tracking-[-0.01em]">
           <img src="/app-icon.png" alt="" className={cn(ease, scrolled ? "size-6" : "size-8")} />
           <span className={cn(ease, scrolled ? "text-[15px]" : "text-[17px]")}>MiniMail</span>
@@ -93,7 +165,7 @@ export function Nav() {
         <a href={LINKS.github} className={cn(link, "relative hidden items-center gap-1.5 sm:inline-flex", scrolled && "py-1.5")}>
           <GithubMark className="size-4" /> GitHub
         </a>
-        <DownloadButton size="sm" className={cn("relative ml-2", ease, scrolled && "h-8 rounded-[10px] px-3")} />
+        <DownloadButton size="sm" compact={scrolled} className="ml-2" />
       </nav>
     </header>
   );
