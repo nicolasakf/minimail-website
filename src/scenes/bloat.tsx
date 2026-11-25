@@ -7,6 +7,7 @@ import { motion } from "motion/react";
 import {
   AlertTriangle,
   Archive,
+  ArrowDown,
   ArrowRight,
   Calendar,
   CheckSquare,
@@ -28,6 +29,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { EASE, useLoop } from "~/lib/motion";
+import { usePhone } from "~/lib/phone";
 import { Lead, Reveal, Section } from "~/parts/site";
 import { Stage } from "~/parts/stage";
 import { FOLDER_ACTIVE } from "~/parts/window";
@@ -249,10 +251,85 @@ function BloatScene() {
   );
 }
 
+/** On a phone: the same story top to bottom, the old client above and MiniMail's places under it. */
+const PHONE_W = 340;
+const PHONE_H = 800;
+
+function PhoneBloatScene() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { step, cycle } = useLoop(ref, [1400, 2600, 1500, 4600], 3);
+  const grown = step >= 1;
+  const answered = step >= 2;
+  return (
+    <div ref={ref} className="absolute inset-0">
+      <div className="absolute left-0 text-[12px] font-semibold uppercase tracking-[0.2em] text-muted-foreground" style={{ top: 0 }}>
+        Traditional email
+      </div>
+      <motion.div
+        className="absolute left-0"
+        style={{ top: 26, width: PHONE_W, height: 330 }}
+        initial={false}
+        animate={{ opacity: answered ? 0.4 : 1, scale: answered ? 0.98 : 1 }}
+        transition={{ duration: 0.6, ease: EASE }}
+      >
+        <OldClient grown={grown} cycle={cycle} />
+      </motion.div>
+      <p className="absolute left-0 text-[17px] text-muted-foreground" style={{ top: 368, width: PHONE_W }}>
+        Folders to build, nest and keep tidy.
+      </p>
+
+      <motion.span
+        className="absolute flex size-11 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground shadow-raise-2"
+        style={{ left: PHONE_W / 2 - 22, top: 410 }}
+        initial={false}
+        animate={{ scale: answered ? 1 : 0.7, opacity: answered ? 1 : 0.25 }}
+        transition={{ type: "spring", stiffness: 380, damping: 18 }}
+      >
+        <ArrowDown className="size-5" />
+      </motion.span>
+
+      <div className="absolute left-0 text-[12px] font-semibold uppercase tracking-[0.2em] text-sidebar-primary" style={{ top: 472 }}>
+        MiniMail
+      </div>
+      <div className="absolute left-0" style={{ top: 498, width: PHONE_W }}>
+        <Places
+          show={answered}
+          delay={0.1}
+          items={[
+            { icon: Inbox, label: "Inbox", on: true },
+            { icon: Archive, label: "Archive" },
+            { icon: Trash2, label: "Trash" },
+            { icon: ShieldAlert, label: "Spam" },
+          ]}
+        />
+        <Places
+          className="mx-auto mt-5 w-[172px]"
+          show={answered}
+          delay={0.6}
+          items={[
+            { icon: Send, label: "Sent" },
+            { icon: SquarePen, label: "Drafts" },
+          ]}
+        />
+      </div>
+      <motion.p
+        className="absolute left-0 text-[17px] font-medium"
+        style={{ top: 762, width: PHONE_W }}
+        initial={false}
+        animate={{ opacity: step >= 3 ? 1 : 0, y: step >= 3 ? 0 : 6 }}
+        transition={{ duration: 0.5, ease: EASE }}
+      >
+        Four places. The rest sorts itself.
+      </motion.p>
+    </div>
+  );
+}
+
 export function BloatSection() {
+  const phone = usePhone();
   return (
     <Section id="sorting" className="-mt-12 pt-0 md:-mt-20 md:pt-0">
-      <div className="plate-1 corner-squircle grid items-center gap-12 rounded-[40px] p-7 md:p-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <div className="plate-1 corner-squircle grid items-center gap-12 rounded-[40px] p-5 md:p-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <div>
           <Lead>
             Traditional email clients are bloated with features you don't need: folders inside folders, labels, filters and rules,
@@ -273,9 +350,15 @@ export function BloatSection() {
           </Lead>
         </div>
         <Reveal>
-          <Stage width={W} height={H}>
-            <BloatScene />
-          </Stage>
+          {phone ? (
+            <Stage width={PHONE_W} height={PHONE_H}>
+              <PhoneBloatScene />
+            </Stage>
+          ) : (
+            <Stage width={W} height={H}>
+              <BloatScene />
+            </Stage>
+          )}
         </Reveal>
       </div>
     </Section>

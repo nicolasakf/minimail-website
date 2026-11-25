@@ -15,6 +15,9 @@ import { AppWindow, ListHeader } from "~/parts/window";
 
 const W = 1040;
 const H = 456;
+/** On a phone: a narrow window, so the cards and rows stay large enough to read. */
+const PHONE_W = 440;
+const PHONE_H = 480;
 const CARDS: CategoryId[] = ["receipts", "newsletters", "notifications"];
 
 interface Arrival {
@@ -72,10 +75,10 @@ function finalState() {
   return { added, list };
 }
 
-export function SortingScene() {
+export function SortingScene({ phone = false }: { phone?: boolean }) {
   return (
-    <Stage width={W} height={H}>
-      <Inbox />
+    <Stage width={phone ? PHONE_W : W} height={phone ? PHONE_H : H}>
+      <Inbox phone={phone} />
     </Stage>
   );
 }
@@ -88,7 +91,7 @@ interface Flight {
   carried?: boolean;
 }
 
-function Inbox() {
+function Inbox({ phone }: { phone: boolean }) {
   const stage = useStage();
   const scope = useRef<HTMLDivElement>(null);
   const inView = useInView(scope, { amount: 0.35 });
@@ -181,9 +184,9 @@ function Inbox() {
         <div className="pl-[84px]">
           <ListHeader compact title="Inbox" />
         </div>
-        <div className="grid grid-cols-3 gap-4 px-5 pb-3 pt-3">
+        <div className={cn("grid grid-cols-3", phone ? "gap-2 px-3 pb-2 pt-2" : "gap-4 px-5 pb-3 pt-3")}>
           {CARDS.map((id) => (
-            <SortCard key={id} id={id} added={added[id] ?? []} hidden={hidden} lifted={lifted === id} />
+            <SortCard key={id} id={id} added={added[id] ?? []} hidden={hidden} lifted={lifted === id} narrow={phone} />
           ))}
         </div>
         <div className="min-h-0 flex-1 overflow-hidden px-1">
@@ -199,14 +202,14 @@ function Inbox() {
                 exit={{ height: 0, opacity: 0, transition: { duration: 0.35, ease: EASE } }}
                 transition={{ duration: 0.5, ease: EASE }}
               >
-                <ThreadRow row={row} hovered={fresh === row.id} nameWidth={170} className="transition-shadow duration-500" />
+                <ThreadRow row={row} hovered={fresh === row.id} nameWidth={phone ? 104 : 170} className="transition-shadow duration-500" />
               </motion.div>
             ))}
           </AnimatePresence>
-          <ThreadRow row={{ id: "pin", from: P.noor, subject: "Kitchen renovation quote", snippet: "Thanks for the quick reply. Attached is the revised quote.", account: "gmail", time: "8:12" }} nameWidth={170} />
+          <ThreadRow row={{ id: "pin", from: P.noor, subject: "Kitchen renovation quote", snippet: "Thanks for the quick reply. Attached is the revised quote.", account: "gmail", time: "8:12" }} nameWidth={phone ? 104 : 170} />
           <ListGroupHeading>Yesterday</ListGroupHeading>
           {YESTERDAY.map((row) => (
-            <ThreadRow key={row.id} row={row} nameWidth={170} />
+            <ThreadRow key={row.id} row={row} nameWidth={phone ? 104 : 170} />
           ))}
         </div>
       </AppWindow>
@@ -217,13 +220,13 @@ function Inbox() {
   );
 }
 
-function SortCard({ id, added, hidden, lifted }: { id: CategoryId; added: Chip[]; hidden: string | null; lifted: boolean }) {
+function SortCard({ id, added, hidden, lifted, narrow }: { id: CategoryId; added: Chip[]; hidden: string | null; lifted: boolean; narrow: boolean }) {
   const category = CATEGORIES.find((c) => c.id === id)!;
   const chips = [...added, ...CHIPS[id]].slice(0, 5);
   const landed = added.filter((chip) => chip.id !== hidden);
   return (
     <CardPlate lifted={lifted}>
-      <CardHead category={category} count={category.count + landed.length} unread={category.unread + landed.length} />
+      <CardHead category={category} count={category.count + landed.length} unread={category.unread + landed.length} narrow={narrow} />
       <div className="flex flex-col overflow-hidden px-1.5" style={{ height: 4 * 28 }}>
         <AnimatePresence initial={false}>
           {chips.map((chip) => (

@@ -47,7 +47,8 @@ export function Stage({
   }, [width, height, maxHeight]);
 
   return (
-    <div ref={outer} className={cn("w-full", className)}>
+    // The scene's own width never widens the column it sits in (on a phone it would push the whole page wider).
+    <div ref={outer} className={cn("w-full", className)} style={{ contain: "inline-size" }}>
       <div className="mx-auto" style={{ width: width * scale, height: height * scale }}>
         <div
           ref={inner}

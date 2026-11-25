@@ -9,6 +9,7 @@ import { BellOff, ListX, ShieldBan, Trash2, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { B, P, type Sender } from "~/lib/demo";
 import { EASE, useLoop } from "~/lib/motion";
+import { usePhone } from "~/lib/phone";
 import { Avatar, CardPlate, ChipLine, GroupTile } from "~/parts/mail";
 import { Lead, Reveal, Section, Title } from "~/parts/site";
 import { Stage } from "~/parts/stage";
@@ -17,6 +18,7 @@ import { FOLDER_ACTIVE } from "~/parts/window";
 
 /** New mail, filed into a category card. */
 export function MinimumSection() {
+  const phone = usePhone();
   return (
     <Section id="minimum">
       <div className="mx-auto max-w-[760px] text-center">
@@ -30,7 +32,7 @@ export function MinimumSection() {
         </p>
       </div>
       <Reveal className="mt-14">
-        <SortingScene />
+        <SortingScene phone={phone} />
       </Reveal>
     </Section>
   );
@@ -38,6 +40,7 @@ export function MinimumSection() {
 
 /** Priority, mute and block. */
 export function RulesSection() {
+  const phone = usePhone();
   return (
     <Section id="rules">
       <div className="mx-auto max-w-[760px] text-center">
@@ -46,10 +49,14 @@ export function RulesSection() {
           Mark a conversation, sender or domain as priority to get pinged right away, mute one you don't need to hear from, block one for good, or unsubscribe from a list.
         </Lead>
       </div>
-      <Reveal className="mt-14">
-        <Stage width={RW} height={RH}>
-          <Rules />
-        </Stage>
+      <Reveal className="mt-10 md:mt-14">
+        {phone ? (
+          <PhoneRules />
+        ) : (
+          <Stage width={RW} height={RH}>
+            <Rules />
+          </Stage>
+        )}
       </Reveal>
     </Section>
   );
@@ -101,6 +108,27 @@ function Rules() {
     <div ref={ref} className="absolute inset-0 grid grid-cols-4 gap-5">
       {RULES.map((rule, i) => (
         <RuleColumn key={rule.id} rule={rule} step={step} delay={i * 0.35} />
+      ))}
+    </div>
+  );
+}
+
+/** On a phone: one card at a time, swiped sideways, each at a size that can be read. */
+function PhoneRules() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { step } = useLoop(ref, [1000, 1100, 4200, 500], 2);
+  // One column of the desktop grid: (1200 - 3 gaps of 20) / 4.
+  const width = (RW - 3 * 20) / 4;
+  return (
+    <div ref={ref} className="no-scrollbar -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2">
+      {RULES.map((rule) => (
+        <div key={rule.id} className="w-[82%] max-w-[300px] shrink-0 snap-center">
+          <Stage width={width} height={RH}>
+            <div className="absolute inset-0 flex flex-col">
+              <RuleColumn rule={rule} step={step} delay={0} />
+            </div>
+          </Stage>
+        </div>
       ))}
     </div>
   );

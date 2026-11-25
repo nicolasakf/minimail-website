@@ -200,9 +200,14 @@ export function ProblemsSection() {
           Email got overcomplicated over the years.
         </motion.h3>
       </div>
-      <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {/* On a phone the four cards are a carousel to swipe through; from `sm` up, the grid as before. */}
+      <div className="no-scrollbar -mx-5 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-4 sm:mx-0 sm:mt-14 sm:grid sm:snap-none sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 sm:grid-cols-2 lg:grid-cols-4">
         {PROBLEMS.map((problem, i) => (
-          <Reveal key={problem.title} delay={i * 0.08} className="plate-1 corner-squircle flex flex-col rounded-[26px] p-3.5">
+          <Reveal
+            key={problem.title}
+            delay={i * 0.08}
+            className="plate-1 corner-squircle flex w-[80%] shrink-0 snap-center flex-col rounded-[26px] p-3.5 sm:w-auto sm:shrink"
+          >
             {problem.scene}
             <div className="px-1.5 pb-1.5 pt-4">
               <h3 className="text-lg font-bold">{problem.title}</h3>

@@ -11,11 +11,14 @@ import { FLAT_KEY, FLAT_KEY_IN } from "@/components/ui/keys";
 import { cn } from "@/lib/utils";
 import { CATEGORIES } from "~/lib/demo";
 import { EASE, useLoop, useTyping } from "~/lib/motion";
+import { usePhone } from "~/lib/phone";
 import { Lead, Reveal, Section, Title } from "~/parts/site";
 import { Cursor } from "~/parts/cursor";
 import { Stage, stageRect, useStage } from "~/parts/stage";
 
 const W = 640;
+/** On a phone the editor is narrower, so its text isn't shrunk as much. */
+const PHONE_W = 400;
 const H = 710;
 
 const describe = (id: string) => CATEGORIES.find((c) => c.id === id)!.description;
@@ -29,6 +32,7 @@ const NOTIFICATIONS_TEXT = "Alerts from GitHub, Linear and our servers. No socia
 const STEPS = [1700, 3600, 1600, 5000, 1700, 3700, 3200];
 
 export function CategoriesSection() {
+  const phone = usePhone();
   return (
     <Section id="categories">
       <div className="grid items-center gap-12 lg:grid-cols-[1fr_640px]">
@@ -40,8 +44,8 @@ export function CategoriesSection() {
           </Lead>
         </div>
         <Reveal>
-          <Stage width={W} height={H}>
-            <EditorScene />
+          <Stage width={phone ? PHONE_W : W} height={H}>
+            <EditorScene width={phone ? PHONE_W : W} />
           </Stage>
         </Reveal>
       </div>
@@ -49,11 +53,13 @@ export function CategoriesSection() {
   );
 }
 
-function EditorScene() {
+function EditorScene({ width }: { width: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const stage = useStage();
   const { step, reduced } = useLoop(ref, STEPS, STEPS.length - 1);
-  const [pointer, setPointer] = useState({ x: 560, y: 20, visible: false, pressed: false });
+  // The pointer waits, hidden, near the top right of the editor (inside it, so it never widens the page).
+  const rest = { x: width - 80, y: 20 };
+  const [pointer, setPointer] = useState({ ...rest, visible: false, pressed: false });
   const [addPressed, setAddPressed] = useState(false);
 
   // The pointer's script: what it moves to, and when it clicks, within each step.
@@ -72,7 +78,7 @@ function EditorScene() {
       });
 
     if (step === 0) {
-      setPointer({ x: 560, y: 20, visible: false, pressed: false });
+      setPointer({ x: width - 80, y: 20, visible: false, pressed: false });
       moveTo(900, "edit-receipts");
     } else if (step === 1) {
       click(0);
@@ -96,7 +102,7 @@ function EditorScene() {
       later(1200, () => setPointer((c) => ({ ...c, visible: false })));
     }
     return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [step, reduced, stage]);
+  }, [step, reduced, stage, width]);
 
   const receipts = useTyping(RECEIPTS_TEXT, step === 1, 32, 400);
   const approvalsName = useTyping(APPROVALS_NAME, step === 3, 12, 500);

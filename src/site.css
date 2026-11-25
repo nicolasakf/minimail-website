@@ -43,3 +43,11 @@ body {
   transform: translateY(-4px) scale(1.01);
   filter: drop-shadow(0 12px 14px rgb(72 64 55 / 0.2));
 }
+
+/* A sideways carousel on a phone: it scrolls, but shows no scrollbar. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

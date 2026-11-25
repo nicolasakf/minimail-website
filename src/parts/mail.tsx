@@ -174,12 +174,25 @@ export const ChipLine = forwardRef<HTMLDivElement, { chip: Chip; style?: CSSProp
 });
 
 /** A category card's head: icon, name and "count · unread". */
-export function CardHead({ category, count, unread, bump }: { category: Category; count?: number; unread?: number; bump?: ReactNode }) {
+export function CardHead({
+  category,
+  count,
+  unread,
+  bump,
+  narrow = false,
+}: {
+  category: Category;
+  count?: number;
+  unread?: number;
+  bump?: ReactNode;
+  /** A card too narrow for its tile (the phone layout): the name gets the room instead. */
+  narrow?: boolean;
+}) {
   const c = count ?? category.count;
   const u = unread ?? category.unread;
   return (
     <div className="flex items-center gap-2.5 py-2.5 pl-3 pr-3">
-      <GroupTile category={category} />
+      {!narrow && <GroupTile category={category} />}
       <div className="min-w-0">
         <div className="truncate font-semibold leading-tight">{category.name}</div>
         <div className="mt-px text-[11px] tabular-nums text-muted-foreground">

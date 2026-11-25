@@ -101,7 +101,7 @@ export function Nav() {
 
 export function Section({ id, children, className }: { id?: string; children: ReactNode; className?: string }) {
   return (
-    <section id={id} className={cn("relative mx-auto w-full max-w-[1200px] scroll-mt-24 px-5 py-24 md:px-8 md:py-32", className)}>
+    <section id={id} className={cn("relative mx-auto w-full max-w-[1200px] scroll-mt-24 px-5 py-16 md:px-8 md:py-32", className)}>
       {children}
     </section>
   );

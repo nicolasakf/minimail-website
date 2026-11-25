@@ -4,6 +4,7 @@ import { motion, useMotionValueEvent, useScroll, useTransform, type MotionValue 
 import { cn } from "@/lib/utils";
 
 import { EASE, useViewportHeight } from "~/lib/motion";
+import { usePhone } from "~/lib/phone";
 import { DownloadButton, GithubButton } from "~/parts/site";
 import { HeroScene, NOTES, TOUR_STRETCHES, noteFor } from "~/scenes/hero";
 
@@ -16,6 +17,7 @@ const STEP_LABELS = ["Categories", "List", "Views", "Accounts", "Folders"];
 export function HeroSection() {
   const tour = useRef<HTMLDivElement>(null);
   const viewport = useViewportHeight();
+  const phone = usePhone();
   // The window stays in place while the page scrolls past it; the notes come one by one.
   const { scrollYProgress } = useScroll({ target: tour, offset: ["start start", "end end"] });
   const progress = useTransform(scrollYProgress, (v) => v);
@@ -75,7 +77,7 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.3, ease: EASE }}
           >
-            <HeroScene progress={progress} maxHeight={viewport - 150} />
+            <HeroScene progress={progress} maxHeight={viewport - 150} phone={phone} />
           </motion.div>
         </div>
       </div>

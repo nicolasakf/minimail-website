@@ -2,7 +2,7 @@
  * "Bring your own AI agent": an agent in a terminal uses the `minimail` CLI, and the app shows what it does:
  * rows picked, moved with an Undo, and a send that waits for the person's answer.
  */
-import { useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, SquareArrowOutUpRight, SquareTerminal, Undo2 } from "lucide-react";
 
@@ -11,14 +11,18 @@ import { FLAT_KEY } from "@/components/ui/keys";
 import { cn } from "@/lib/utils";
 import { B, P, type Row } from "~/lib/demo";
 import { EASE, useLoop, useTyping } from "~/lib/motion";
+import { usePhone } from "~/lib/phone";
 import { Cursor } from "~/parts/cursor";
 import { ThreadRow } from "~/parts/mail";
 import { Lead, Reveal, Section, Title } from "~/parts/site";
-import { Stage } from "~/parts/stage";
+import { Stage, stageRect, useStage } from "~/parts/stage";
 import { AppWindow, ListHeader, Rail } from "~/parts/window";
 
 const W = 1200;
 const H = 640;
+/** On a phone: the terminal above the app instead of beside it. */
+const PHONE_W = 420;
+const PHONE_H = 900;
 
 const ROWS: Row[] = [
   { id: "ana", from: P.ana, subject: "Thursday?", snippet: "Are we still on for Thursday at two? I can bring the printouts.", unread: true, account: "gmail", time: "10:04" },
@@ -53,6 +57,7 @@ const LINES: Line[] = [
 const STEPS = [2300, 900, 1700, 1700, 1700, 2000, 2000, 900, 900, 1400, 900, 400, 1100, 3200];
 
 export function AgentSection() {
+  const phone = usePhone();
   return (
     <Section id="agents">
       <div className="grid gap-6 md:grid-cols-[1.05fr_1fr] md:items-end">
@@ -64,9 +69,9 @@ export function AgentSection() {
           For sensitive actions like sending mail, MiniMail asks you first.
         </Lead>
       </div>
-      <Reveal className="mt-14">
-        <Stage width={W} height={H}>
-          <AgentScene />
+      <Reveal className="mt-10 md:mt-14">
+        <Stage width={phone ? PHONE_W : W} height={phone ? PHONE_H : H}>
+          <AgentScene phone={phone} />
         </Stage>
       </Reveal>
       <div className="mt-16 grid gap-8 md:grid-cols-3">
@@ -94,16 +99,29 @@ function Point({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function AgentScene() {
+function AgentScene({ phone }: { phone: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
+  const stage = useStage();
   const { step, cycle } = useLoop(ref, STEPS, STEPS.length - 1);
   const checked = step >= 3 && step < 5;
   const archived = step >= 5;
   const asking = step >= 9 && step < 12;
   const rows = ROWS.filter((r) => !(archived && NEWSLETTERS.includes(r.id))).map((r) => (r.id === "ana" && step >= 12 ? { ...r, unread: false, count: 2 } : r));
+
+  // On a phone the card is laid out differently, so the pointer finds "Allow once" on the page instead of a fixed spot.
+  const [allow, setAllow] = useState<{ x: number; y: number } | null>(null);
+  useEffect(() => {
+    if (!phone || !asking) return;
+    const timer = window.setTimeout(() => {
+      const box = stageRect(stage, stage.ref.current?.querySelector("[data-allow]") ?? null);
+      if (box) setAllow({ x: box.x + box.width / 2 - 2, y: box.y + box.height / 2 - 1 });
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [phone, asking, stage]);
+
   return (
-    <div ref={ref} className="absolute inset-0 flex gap-6">
-      <Terminal step={step} cycle={cycle} />
+    <div ref={ref} className={cn("absolute inset-0 flex", phone ? "flex-col gap-4" : "gap-6")}>
+      <Terminal step={step} cycle={cycle} phone={phone} />
       <div className="relative min-w-0 flex-1">
         <AppWindow className="absolute inset-0 flex">
           <Rail />
@@ -141,27 +159,38 @@ function AgentScene() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 12 }}
                 transition={{ duration: 0.4, ease: EASE }}
-                className="plate-1 corner-squircle absolute bottom-5 left-[calc(50%+36px)] flex w-max items-center gap-3 whitespace-nowrap rounded-[16px] py-2.5 pl-4 pr-2 text-sm shadow-overlay"
+                className={cn(
+                  "plate-1 corner-squircle absolute bottom-5 flex w-max items-center gap-3 whitespace-nowrap rounded-[16px] py-2.5 pl-4 pr-2 text-sm shadow-overlay",
+                  phone ? "left-1/2" : "left-[calc(50%+36px)]",
+                )}
                 style={{ x: "-50%" }}
               >
                 <Check className="size-4 text-success" />
                 <span className="font-medium">Moved 4 conversations to Archive</span>
-                <span className="text-muted-foreground">via CLI</span>
+                {!phone && <span className="text-muted-foreground">via CLI</span>}
                 <span className={cn("ml-1 flex items-center gap-1 rounded-[10px] px-2 py-1 text-xs font-medium", FLAT_KEY, "plate-2")}>
                   <Undo2 className="size-3.5" /> Undo
                 </span>
               </motion.div>
             )}
           </AnimatePresence>
-          <AnimatePresence>{asking && <AskFirst pressed={step === 11} />}</AnimatePresence>
+          <AnimatePresence>{asking && <AskFirst pressed={step === 11} phone={phone} />}</AnimatePresence>
         </AppWindow>
-        <Cursor x={step >= 10 ? 322 : 520} y={step >= 10 ? 390 : 600} pressed={step === 11} visible={step >= 9 && step <= 12} />
+        {!phone && <Cursor x={step >= 10 ? 322 : 520} y={step >= 10 ? 390 : 600} pressed={step === 11} visible={step >= 9 && step <= 12} />}
       </div>
+      {phone && (
+        <Cursor
+          x={step >= 10 && allow ? allow.x : PHONE_W - 70}
+          y={step >= 10 && allow ? allow.y : PHONE_H - 50}
+          pressed={step === 11}
+          visible={step >= 9 && step <= 12}
+        />
+      )}
     </div>
   );
 }
 
-function AskFirst({ pressed }: { pressed: boolean }) {
+function AskFirst({ pressed, phone }: { pressed: boolean; phone: boolean }) {
   return (
     <motion.div className="absolute inset-0 z-20 flex items-center justify-center bg-foreground/10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <motion.div
@@ -169,7 +198,7 @@ function AskFirst({ pressed }: { pressed: boolean }) {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.25 }}
-        className="plate-1 corner-squircle grid w-[520px] gap-4 rounded-[24px] p-6 shadow-overlay"
+        className={cn("plate-1 corner-squircle grid gap-4 rounded-[24px] shadow-overlay", phone ? "w-[372px] p-5" : "w-[520px] p-6")}
       >
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
@@ -191,7 +220,9 @@ function AskFirst({ pressed }: { pressed: boolean }) {
         </dl>
         <div className="flex flex-wrap justify-end gap-2">
           <Button variant="outline">Reject</Button>
-          <Button className={cn(pressed && "translate-x-[0.4px] translate-y-[0.4px] shadow-pressed")}>Allow once</Button>
+          <Button data-allow className={cn(pressed && "translate-x-[0.4px] translate-y-[0.4px] shadow-pressed")}>
+            Allow once
+          </Button>
           <Button variant="outline">
             <SquareArrowOutUpRight /> Open in composer
           </Button>
@@ -202,11 +233,16 @@ function AskFirst({ pressed }: { pressed: boolean }) {
   );
 }
 
-function Terminal({ step, cycle }: { step: number; cycle: number }) {
+function Terminal({ step, cycle, phone }: { step: number; cycle: number; phone: boolean }) {
   const shown = LINES.filter((line) => line.at <= step);
   const current = shown[shown.length - 1];
   return (
-    <div className="grain corner-squircle relative flex w-[520px] shrink-0 flex-col overflow-hidden rounded-[22px] bg-primary text-primary-foreground shadow-raise-1">
+    <div
+      className={cn(
+        "grain corner-squircle relative flex shrink-0 flex-col overflow-hidden rounded-[22px] bg-primary text-primary-foreground shadow-raise-1",
+        phone ? "h-[400px] w-full" : "w-[520px]",
+      )}
+    >
       <div className="flex h-11 shrink-0 items-center gap-2 px-4">
         {["#ff5f57", "#febc2e", "#28c840"].map((c) => (
           <span key={c} className="size-3 rounded-full" style={{ background: c }} />
