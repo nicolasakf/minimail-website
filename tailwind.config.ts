@@ -5,5 +5,5 @@ import app from "./src/minimail/tailwind.config";
 /** MiniMail's own theme (copied by `npm run sync-ui`), pointed at the site's files. */
 export default {
   ...app,
-  content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  content: ["./index.html", "./privacy.html", "./src/**/*.{ts,tsx}"],
 } satisfies Config;

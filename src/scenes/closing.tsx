@@ -181,6 +181,7 @@ export function ClosingSection() {
         <FooterLink href={LINKS.guide}>Guide</FooterLink>
         <FooterLink href={`${LINKS.github}/releases`}>Releases</FooterLink>
         <FooterLink href={LINKS.license}>Apache 2.0</FooterLink>
+        <FooterLink href={LINKS.privacy}>Privacy</FooterLink>
         <FooterLink href={LINKS.github}>
           <GithubMark className="size-4" /> GitHub
         </FooterLink>

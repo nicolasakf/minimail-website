@@ -13,6 +13,7 @@ export const LINKS = {
   github: "https://github.com/nicolasakf/MiniMail",
   guide: "https://github.com/nicolasakf/MiniMail/blob/main/docs/guide.md",
   license: "https://github.com/nicolasakf/MiniMail/blob/main/LICENSE",
+  privacy: "/privacy",
 };
 
 export function GithubMark({ className }: { className?: string }) {

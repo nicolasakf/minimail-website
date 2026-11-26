@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MiniMail: privacy policy</title>
+    <meta name="description" content="What MiniMail does with your mail and your Google user data." />
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+    <link rel="canonical" href="https://minimail.tech/privacy" />
+    <meta name="theme-color" content="#ebe6dd" />
+    <link rel="stylesheet" href="/src/site.css" />
+  </head>
+  <body>
+    <main class="mx-auto max-w-[760px] px-5 py-10 md:py-16">
+      <a href="/" class="flex items-center gap-2 font-semibold"><img src="/app-icon.png" alt="" class="size-7" /> MiniMail</a>
+
+      <article
+        class="plate-1 corner-squircle mt-6 rounded-[32px] px-6 py-10 text-[15px] leading-relaxed md:px-12 [&_a]:font-medium [&_a]:text-sidebar-primary [&_a]:underline [&_a]:underline-offset-4 [&_h2]:mb-3 [&_h2]:mt-9 [&_h2]:text-xl [&_h2]:font-bold [&_li]:mt-1.5 [&_p]:mt-3 [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5"
+      >
+        <h1 class="text-3xl font-bold tracking-[-0.02em]">Privacy policy</h1>
+        <p class="text-muted-foreground">Last updated: November 26, 2026</p>
+
+        <p>
+          MiniMail is a free, open source desktop email client for macOS. It runs on your computer and connects directly
+          to your email provider. MiniMail has no server of its own: its developer does not receive, store or read your
+          mail, your passwords or your Google user data. The source code is
+          <a href="https://github.com/nicolasakf/MiniMail">public</a>.
+        </p>
+
+        <h2>Google user data MiniMail accesses</h2>
+        <p>When you choose to connect a Google account, MiniMail asks for:</p>
+        <ul>
+          <li><strong>Your name and email address</strong>, to add the account and label it.</li>
+          <li>
+            <strong>Gmail access</strong> (<code>https://mail.google.com/</code>), the permission Google requires for IMAP
+            and SMTP. It covers your messages, their headers, attachments and folders.
+          </li>
+        </ul>
+
+        <h2>How it is used</h2>
+        <p>Google user data is used only to provide the mail features you see in the app:</p>
+        <ul>
+          <li>listing, searching, opening and downloading your mail and attachments;</li>
+          <li>writing, saving and sending messages;</li>
+          <li>marking, moving, archiving, marking as spam and deleting messages, including deleting forever when you ask;</li>
+          <li>sorting mail into categories, notifications, unsubscribing and the optional features described below.</li>
+        </ul>
+        <p>MiniMail does not use your data for advertising, does not sell it and does not build profiles from it.</p>
+
+        <h2>Where it is stored</h2>
+        <ul>
+          <li>Everything is stored on your computer, in MiniMail's application data folder.</li>
+          <li>
+            Sign-in tokens, app passwords, AI keys, the mail list and the text of downloaded messages are encrypted with a
+            key kept in the macOS Keychain.
+          </li>
+          <li>Connections to Google use TLS.</li>
+        </ul>
+
+        <h2>What leaves your computer</h2>
+        <p>Your mail goes between your computer and your email provider. The exceptions are the features below.</p>
+        <ul>
+          <li>
+            <strong>AI sorting</strong> (off until you add your own AI provider key). For each new conversation, the sender,
+            the subject and about 500 characters of the text are sent to the provider you chose: the Vercel AI Gateway,
+            OpenRouter or TypeSafe. Runs of digits and the path and query of links are replaced with placeholders first.
+          </li>
+          <li>
+            <strong>Reading verification codes</strong> (needs your AI key). The sender, the subject and the start of an
+            email that holds a code may be sent to the chat model you chose, with links masked.
+          </li>
+          <li>
+            <strong>Text completion</strong> (off until you turn it on). While you write, your draft, the subject, the
+            recipients, the message you are answering and the few before it are sent to the provider you chose.
+          </li>
+          <li>
+            <strong>Command line for AI agents</strong> (off until you turn it on). Programs you run on your computer can
+            read and organize your mail within the permissions you set. What such a program does with what it reads is
+            governed by that program and its provider.
+          </li>
+          <li>
+            <strong>Sender logos and photos</strong>. Company logos are looked up from the sender's domain. People's photos
+            (off by default) send a hash of the sender's address to Gravatar.
+          </li>
+          <li><strong>Account setup</strong> may send your email address's domain to Mozilla's mail settings service.</li>
+          <li><strong>Unsubscribing</strong> contacts the address the mailing list gave, only when you ask.</li>
+          <li><strong>Updates</strong> are checked and downloaded from GitHub. No mail data is sent.</li>
+        </ul>
+        <p>
+          The providers you choose handle what they receive under their own terms. MiniMail does not use Google user data
+          to create, train or improve any generalized artificial intelligence or machine learning model, and does not send
+          it to anyone for that purpose.
+        </p>
+
+        <h2>Limited Use</h2>
+        <p>
+          MiniMail's use of information received from Google APIs, and its transfer to any other app, adheres to the
+          <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>,
+          including the Limited Use requirements. The use of information received from Google Workspace scopes adheres to
+          the Google User Data Policy, including the Limited Use requirements.
+        </p>
+
+        <h2>Keeping and deleting your data</h2>
+        <ul>
+          <li>
+            Removing an account in MiniMail deletes its sign-in tokens, its saved mail list and its saved message text from
+            your computer. It does not delete mail from your Google account.
+          </li>
+          <li>
+            To delete everything MiniMail keeps, quit it and delete the folder
+            <code>~/Library/Application Support/MiniMail</code>.
+          </li>
+          <li>
+            To withdraw MiniMail's access to your Google account, remove it in
+            <a href="https://myaccount.google.com/connections">your Google Account's connections</a>.
+          </li>
+        </ul>
+
+        <h2>This website</h2>
+        <p>
+          minimail.tech uses Vercel Web Analytics, which counts visits without cookies. The website never has access to your
+          mail or your Google account.
+        </p>
+
+        <h2>Changes and contact</h2>
+        <p>
+          Changes to this policy are published on this page with a new date. Questions and requests:
+          <a href="https://github.com/nicolasakf/MiniMail/issues">github.com/nicolasakf/MiniMail/issues</a>.
+        </p>
+      </article>
+    </main>
+  </body>
+</html>
