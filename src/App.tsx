@@ -1,4 +1,4 @@
-import { Groove, Nav } from "~/parts/site";
+import { Groove, MoldedFilter, Nav } from "~/parts/site";
 import { AgentSection } from "~/scenes/agent";
 import { BloatSection } from "~/scenes/bloat";
 import { CategoriesSection } from "~/scenes/categories";
@@ -10,6 +10,7 @@ import { ProblemsSection } from "~/scenes/problems";
 export function App() {
   return (
     <>
+      <MoldedFilter />
       <Nav />
       <main id="top">
         <HeroSection />

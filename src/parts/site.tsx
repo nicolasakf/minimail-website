@@ -184,6 +184,48 @@ export function Eyebrow({ children, className }: { children: ReactNode; classNam
   return <p className={cn("text-[13px] font-semibold uppercase tracking-[0.28em] text-sidebar-primary", className)}>{children}</p>;
 }
 
+/** The depth of the molding: full for the big titles, shallower for the smaller ones on a phone, whose strokes are thin. */
+const MOLDS = [
+  { id: "molded", depth: 1 },
+  { id: "molded-small", depth: 0.6 },
+];
+
+/**
+ * The light on the big titles' letters (`.molded` in site.css), drawn once for the whole page. Text cannot take the
+ * cards' box shadows, so this does the same to the letter shapes: a lit top-left edge, a shaded bottom-right edge and
+ * a cast shadow.
+ */
+export function MoldedFilter() {
+  return (
+    <svg aria-hidden width="0" height="0" className="absolute">
+      {MOLDS.map(({ id, depth }) => (
+        <filter key={id} id={id} x="-10%" y="-25%" width="120%" height="160%" colorInterpolationFilters="sRGB">
+          <feGaussianBlur in="SourceAlpha" stdDeviation={0.5 * depth} result="soft" />
+          {/* What the shape covers and its shifted copy does not is the rim on one side. */}
+          <feOffset in="soft" dx={1.5 * depth} dy={1.5 * depth} result="down" />
+          <feComposite in="SourceAlpha" in2="down" operator="out" result="litRim" />
+          <feFlood floodColor="#fff" floodOpacity="0.55" />
+          <feComposite in2="litRim" operator="in" result="lit" />
+          <feGaussianBlur in="SourceAlpha" stdDeviation={1.1 * depth} result="softer" />
+          <feOffset in="softer" dx={-1.8 * depth} dy={-1.8 * depth} result="up" />
+          <feComposite in="SourceAlpha" in2="up" operator="out" result="shadeRim" />
+          <feFlood floodColor="#000" floodOpacity="0.4" />
+          <feComposite in2="shadeRim" operator="in" result="shade" />
+          <feMerge result="edges">
+            <feMergeNode in="SourceGraphic" />
+            <feMergeNode in="shade" />
+            <feMergeNode in="lit" />
+          </feMerge>
+          <feComposite in="edges" in2="SourceAlpha" operator="in" result="face" />
+          {/* The cast shadow, in the plastic's shadow tone: a tight one and a wider one, as on a raised plate. */}
+          <feDropShadow in="face" dx={depth} dy={depth} stdDeviation={0.5 * depth} floodColor="#484037" floodOpacity="0.3" result="near" />
+          <feDropShadow in="near" dx={2.8 * depth} dy={2.8 * depth} stdDeviation={2 * depth} floodColor="#484037" floodOpacity="0.28" />
+        </filter>
+      ))}
+    </svg>
+  );
+}
+
 /** A heading that rises into place the first time it is seen. */
 export function Title({ children, className, as: Tag = "h2" }: { children: ReactNode; className?: string; as?: "h1" | "h2" | "h3" }) {
   const M = motion[Tag];
@@ -193,7 +235,7 @@ export function Title({ children, className, as: Tag = "h2" }: { children: React
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.6 }}
       transition={{ duration: 0.7, ease: EASE }}
-      className={cn("text-balance text-[40px] font-bold leading-[1.02] tracking-[-0.025em] md:text-[56px]", className)}
+      className={cn("molded molded-face text-balance text-[40px] font-bold leading-[1.02] tracking-[-0.025em] md:text-[56px]", className)}
     >
       {children}
     </M>

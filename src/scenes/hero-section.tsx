@@ -34,7 +34,7 @@ export function HeroSection() {
           transition={{ duration: 0.8, ease: EASE }}
         />
         <motion.h1
-          className="mt-6 text-balance text-[52px] font-bold leading-[0.98] tracking-[-0.03em] md:text-[84px]"
+          className="molded molded-face mt-6 text-balance text-[52px] font-bold leading-[0.98] tracking-[-0.03em] md:text-[84px]"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.08, ease: EASE }}
@@ -113,7 +113,7 @@ function StepTrack({ tour, progress }: { tour: React.RefObject<HTMLDivElement | 
             title={note.title}
             className={cn(
               "corner-squircle flex h-7 items-center justify-center rounded-[12px] px-2.5 text-[12px] font-medium transition-all duration-200 md:px-3.5",
-              active ? "text-sidebar-primary shadow-pressed" : "text-muted-foreground hover:plate-2 hover:text-foreground",
+              active ? "plate-2 sel-tint text-sidebar-primary" : "text-muted-foreground hover:plate-2 hover:text-foreground",
             )}
           >
             {STEP_LABELS[i]}

@@ -95,7 +95,7 @@ export function AccountsSection() {
       </div>
 
       <div className="mx-auto mt-28 max-w-[720px] text-center">
-        <h3 className="text-balance text-[28px] font-bold leading-tight tracking-[-0.02em] md:text-[36px]">One inbox for all your accounts.</h3>
+        <h3 className="molded molded-face text-balance text-[28px] font-bold leading-tight tracking-[-0.02em] md:text-[36px]">One inbox for all your accounts.</h3>
         <p className="mx-auto mt-3 max-w-[520px] text-pretty text-[17px] leading-relaxed text-muted-foreground">Connect as many as you like, in one list.</p>
       </div>
       <div className="mt-10 grid gap-5 md:grid-cols-3">

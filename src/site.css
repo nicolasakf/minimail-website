@@ -27,6 +27,38 @@ body {
   background: hsl(var(--sidebar-primary) / 0.22);
 }
 
+/*
+ * The big titles are letters molded from the same plastic as the plates. `.molded` is the light on them (the filter is
+ * `MoldedFilter` in parts/site.tsx); `.molded-face` is their material: the ink or the blue insert, with the grain.
+ * The filter goes on the heading, the face on whatever holds the text.
+ */
+.molded {
+  filter: url(#molded);
+}
+
+@media (max-width: 767px) {
+  .molded {
+    filter: url(#molded-small);
+  }
+}
+
+.molded-face {
+  --face: hsl(var(--foreground));
+  background-color: var(--face);
+  background-image: url("./minimail/assets/grain-light.png");
+  background-size: var(--grain-size);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* The face is only painted inside the box, so it is made tall enough for descenders without moving anything. */
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
+.molded-blue {
+  --face: hsl(var(--sidebar-primary));
+}
+
 /* A note laid over a demo: matte, a little see-through, and with a soft shadow. */
 .note-plate {
   background-color: hsl(30 14% 22% / 0.94);

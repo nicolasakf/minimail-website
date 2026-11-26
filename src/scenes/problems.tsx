@@ -226,11 +226,11 @@ function Question() {
   return (
     <div className="mt-28 text-center md:mt-36">
       <Lead className="mx-auto max-w-[560px]">MiniMail is a desktop email client built on a different question:</Lead>
-      <h2 className="mx-auto mt-6 max-w-[900px] text-balance text-[48px] font-bold leading-[1] tracking-[-0.03em] md:text-[88px]">
+      <h2 className="molded mx-auto mt-6 max-w-[900px] text-balance text-[48px] font-bold leading-[1] tracking-[-0.03em] md:text-[88px]">
         {words.map((word, i) => (
           <motion.span
             key={word}
-            className={cn("inline-block pr-[0.22em]", word === "simple" && "text-sidebar-primary")}
+            className={cn("molded-face inline-block pr-[0.22em]", word === "simple" && "molded-blue")}
             initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true, amount: 0.8 }}

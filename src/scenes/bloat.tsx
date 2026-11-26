@@ -344,7 +344,7 @@ export function BloatSection() {
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true, amount: 0.8 }}
             transition={{ duration: 0.8, delay: 0.15, ease: EASE }}
-            className="mt-3 text-balance text-[44px] font-bold leading-[1.02] tracking-[-0.03em] text-sidebar-primary md:text-[60px]"
+            className="molded molded-face molded-blue mt-3 text-balance text-[44px] font-bold leading-[1.02] tracking-[-0.03em] md:text-[60px]"
           >
             Sorting is all you need.
           </motion.h3>
